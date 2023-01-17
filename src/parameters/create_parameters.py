@@ -1,3 +1,5 @@
+# Nathan Blair 2022
+
 import os 
 
 def main():

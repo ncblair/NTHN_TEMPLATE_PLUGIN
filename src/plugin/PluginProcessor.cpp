@@ -34,23 +34,10 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     //--------------------------------------------------------------------------------
     // read in some parameter values here, if you want
+    // in this case, gain goes from 0 to 100 (see: ../parameters/parameters.csv)
+    // so we normalize it to 0 to 1
     //--------------------------------------------------------------------------------
-    
-    auto gain = state->param_value(PARAM::GAIN);
-    // gain goes from 0 to 100 (see: ../parameters/parameters.csv)
-
-    
-    //--------------------------------------------------------------------------------
-    // If you need the bpm from the host, you can attempt to get it like this:
-    //--------------------------------------------------------------------------------
-    // float bpm = 120.0f; // default to 120 if we can't get it from the host
-    // auto playhead_optional = getPlayHead()->getPosition();
-    // if (playhead_optional.hasValue()) {
-    //     auto bpm_optional = playhead_optional->getBpm();
-    //     if (bpm_optional.hasValue()) {
-    //         bpm = *bpm_optional;
-    //     }
-    // }
+    auto gain = state->param_value(PARAM::GAIN) / 100.0f;
 
     //--------------------------------------------------------------------------------
     // process samples below. use the buffer argument that is passed in.
@@ -58,7 +45,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // for a synth, buffer is filled with zeros, and you should fill it with output samples
     // see: https://docs.juce.com/master/classAudioBuffer.html
     //--------------------------------------------------------------------------------
-    buffer.applyGain(gain / 100.0f);
+    buffer.applyGain(gain);
 
     //--------------------------------------------------------------------------------
     // you can use midiMessages to read midi if you need. 
