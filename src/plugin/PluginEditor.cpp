@@ -1,3 +1,5 @@
+// Nathan Blair January 2023
+
 #include "PluginEditor.h"
 #include "../parameters/StateManager.h"
 

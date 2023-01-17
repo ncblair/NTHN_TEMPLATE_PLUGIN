@@ -1,3 +1,5 @@
+// Nathan Blair January 2023
+
 #pragma once
 
 class StateManager;
