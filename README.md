@@ -4,12 +4,12 @@ a quick way to setup a JUCE plugin project
 
 
 
-**Setup Directions (MacOS)**: 
+**Setup Directions**: 
 
 ```
 git clone https://github.com/ncblair/MAT240B_JUCE_TEMPLATE.git
 cd MAT240B_JUCE_TEMPLATE
-./configure.sh
+git submodule update --recursive --init --remote
 ```
 
 
