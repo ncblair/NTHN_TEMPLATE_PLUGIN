@@ -11,7 +11,7 @@ git clone https://github.com/ncblair/MAT240B_JUCE_TEMPLATE.git
 cd MAT240B_JUCE_TEMPLATE
 git submodule update --recursive --init --remote
 ```
-
+r
 
 
 **Build Directions: (MacOS)**
@@ -41,5 +41,5 @@ try this article for building with CMAKE: https://github.com/juce-framework/JUCE
 
 - write audio code in src/plugin/PluginProcessor.cpp 
 - write UI code in src/plugin/PluginEditor.cpp
-- add parameteres in src/parameters/parameters.csv
+- add parameters in src/parameters/parameters.csv
 - link additional source files and resources in CMakeLists.txt
