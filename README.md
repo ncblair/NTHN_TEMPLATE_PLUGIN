@@ -7,7 +7,7 @@ a quick way to setup a JUCE plugin project
 **Setup Directions**: 
 
 ```
-git clone https://github.com/ncblair/MAT240B_JUCE_TEMPLATE.git
+git clone https://github.com/ncblair/NTHN_TEMPLATE_PLUGIN.git
 cd MAT240B_JUCE_TEMPLATE
 git submodule update --recursive --init --remote
 ```
