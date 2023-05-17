@@ -3,6 +3,7 @@
 #pragma once
 
 class StateManager;
+class ParameterSlider;
 
 #include "PluginProcessor.h"
 
@@ -47,6 +48,9 @@ private:
     // a convenient pointer to the state manager 
     // which is owned by the processor
     StateManager* state;
+
+    // A single slider
+    std::unique_ptr<ParameterSlider> gain_slider;
 
     //==============================================================================
     // UNDO REDO

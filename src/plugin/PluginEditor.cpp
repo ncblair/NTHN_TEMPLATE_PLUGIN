@@ -2,6 +2,7 @@
 
 #include "PluginEditor.h"
 #include "../parameters/StateManager.h"
+#include "../interface/ParameterSlider.h"
 
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (PluginProcessor& p)
@@ -13,9 +14,14 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (PluginProcesso
     // INIT UNDO/REDO
     undo_manager = state->get_undo_manager();
 
+    // add slider BEFORE setting size
+    gain_slider = std::make_unique<ParameterSlider>(state, PARAM::GAIN);
+    addAndMakeVisible(*gain_slider);
+
     // some settings about UI
     setOpaque (true);
     setSize(W, H);
+    setColour(0, juce::Colour(0xff00ffa1)); // background color
     
     // resizable window
     setResizable(true, true);
@@ -35,21 +41,24 @@ AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // Our component is opaque, so we must completely fill the background with a solid colour
-    // Use gain parameter to determine background color
-    auto gain = state->param_value(PARAM::GAIN) / 100.0f;
-    g.fillAll (juce::Colour(0xff00ffa1).withBrightness(gain));
+    g.fillAll(findColour(0));
 }
 
 void AudioPluginAudioProcessorEditor::resized()
 {
     // set the position of your components here
+    auto slider_size = proportionOfWidth(0.1f);
+    auto slider_x = proportionOfWidth(0.5f) - (slider_size / 2.0f);
+    auto slider_y = proportionOfHeight(0.5f) - (slider_size / 2.0f);
+    gain_slider->setBounds(slider_x, slider_y, slider_size, slider_size);
 }
 
 void AudioPluginAudioProcessorEditor::timerCallback() {
-    // repaint UI and note that we have updated ui
-    if (state->any_parameter_changed.load()) {
-        repaint();
-        state->any_parameter_changed.store(false);
+    // repaint UI and note that we have updated ui, if parameter values have changed
+    if (state->any_parameter_changed.exchange(false)) {
+        if (state->get_parameter_modified(PARAM::GAIN)) {
+            gain_slider->repaint();
+        }
     }
     state->update_preset_modified();
 

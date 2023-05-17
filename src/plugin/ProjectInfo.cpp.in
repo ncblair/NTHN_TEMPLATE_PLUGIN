@@ -1,0 +1,8 @@
+// AUTO GENERATED FILE
+
+#include "ProjectInfo.h"
+
+const int ProjectInfo::versionNumber = @VERSION_NUMBER@;
+const char* const ProjectInfo::versionString = "@VERSION_STRING@";
+const char* const ProjectInfo::companyName = "@COMPANY_NAME@";
+const char* const ProjectInfo::projectName = "@PROJECT_NAME@";

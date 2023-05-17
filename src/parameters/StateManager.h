@@ -4,7 +4,10 @@
 
 class PluginProcessor;
 
-#include <JuceHeader.h>
+// #include <JuceHeader.h>
+#include <juce_core/juce_core.h>
+#include <juce_audio_processors/juce_audio_processors.h>
+
 #include "ParameterDefines.h"
 
 /*
@@ -49,10 +52,12 @@ class StateManager : public juce::ValueTree::Listener, public juce::AudioProcess
     //--------------------------------------------------------------------------------
     juce::RangedAudioParameter* get_parameter(size_t param_id);
     void set_parameter(size_t param_id, float value);
+    void set_parameter_normalized(size_t param_id, float normalized_value);
     void randomize_parameter(size_t param_id, float min = 0.0f, float max = 1.0f);
     void reset_parameter(size_t param_id);
     void init();
     void randomize_parameters();
+    juce::String get_parameter_text(size_t param_id);
 
     //--------------------------------------------------------------------------------
     // ValueTrees are essentially light references to shared JSON data and can be copied freely
@@ -74,6 +79,8 @@ class StateManager : public juce::ValueTree::Listener, public juce::AudioProcess
     void set_preset_name(juce::String preset_name);
     juce::String get_preset_name();
     void update_preset_modified();
+    bool get_parameter_modified(size_t param_id, bool exchange_value=false);
+
 
 
     //--------------------------------------------------------------------------------
@@ -122,6 +129,8 @@ class StateManager : public juce::ValueTree::Listener, public juce::AudioProcess
     std::unique_ptr<juce::AudioProcessorValueTreeState> param_tree_ptr;
     juce::ValueTree property_tree;
     std::unordered_map<juce::String, std::atomic<float>> property_atomics;
+    std::unordered_map<juce::String, std::atomic<bool>> parameter_modified_flags;
+    
     juce::ValueTree preset_tree;
 
     //random number generator for randomizing parameters

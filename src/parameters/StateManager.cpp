@@ -2,6 +2,7 @@
 
 #include "StateManager.h"
 #include "../plugin/PluginProcessor.h"
+#include "../plugin/ProjectInfo.h"
 
 
 StateManager::StateManager(PluginProcessor* proc) : 
@@ -61,6 +62,7 @@ StateManager::StateManager(PluginProcessor* proc) :
             property_tree.setProperty(PARAMETER_IDS[p_id], PARAMETER_DEFAULTS[p_id], nullptr);
             property_atomics[PARAMETER_NAMES[p_id]].store(PARAMETER_DEFAULTS[p_id]);
         }
+        parameter_modified_flags[PARAMETER_NAMES[p_id]].store(false);
     }
 
     param_tree_ptr.reset(new juce::AudioProcessorValueTreeState(*proc, &undo_manager, PARAMETERS_ID, {params.begin(), params.end()}));
@@ -182,6 +184,10 @@ void StateManager::update_preset_modified() {
     }  
 }
 
+bool StateManager::get_parameter_modified(size_t param_id, bool exchange_value) {
+    return parameter_modified_flags[PARAMETER_NAMES[param_id]].exchange(exchange_value);
+}
+
 juce::RangedAudioParameter* StateManager::get_parameter(size_t param_id) {
     if (PARAMETER_AUTOMATABLE[param_id]) {
         return param_tree_ptr->getParameter(PARAMETER_NAMES[param_id]);
@@ -197,13 +203,26 @@ void StateManager::set_parameter(size_t param_id, float value) {
     if (PARAMETER_AUTOMATABLE[param_id]) {
         auto parameter = get_parameter(param_id);
         auto range = PARAMETER_RANGES[param_id];
-        parameter->beginChangeGesture();
-        parameter->setValueNotifyingHost(range.convertTo0to1(range.snapToLegalValue(value)));
-        parameter->endChangeGesture();
+        auto normalized_value = range.convertTo0to1(range.snapToLegalValue(value));
+        set_parameter_normalized(param_id, normalized_value);
     }
     else {
         property_tree.setProperty(PARAMETER_IDS[param_id], value, &undo_manager);
-        // property_atomics[PARAMETER_NAMES[param_id]].store(value);
+    }
+}
+
+void StateManager::set_parameter_normalized(size_t param_id, float normalized_value) {
+    if (normalized_value > 1.0) normalized_value = 1.0;
+    else if (normalized_value < 0.0) normalized_value = 0.0;
+    if (PARAMETER_AUTOMATABLE[param_id]) {
+        auto parameter = get_parameter(param_id);
+        parameter->beginChangeGesture();
+        parameter->setValueNotifyingHost(normalized_value);
+        parameter->endChangeGesture();
+    }
+    else {
+        auto unnormalized_value = PARAMETER_RANGES[param_id].convertFrom0to1(normalized_value);
+        set_parameter(param_id, unnormalized_value);
     }
 }
 
@@ -224,6 +243,9 @@ void StateManager::randomize_parameter(size_t param_id, float min, float max) {
     }
 }
 
+juce::String StateManager::get_parameter_text(size_t param_id) {
+    return get_parameter(param_id)->getText(PARAMETER_RANGES[param_id].convertTo0to1(param_value(param_id)), 20);
+}
 void StateManager::reset_parameter(size_t param_id) {
     set_parameter(param_id, PARAMETER_DEFAULTS[param_id]);
 }
@@ -253,6 +275,10 @@ void StateManager::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHa
     if (treeWhosePropertyHasChanged != preset_tree) {
         preset_modified.store(true);
         any_parameter_changed.store(true);
+        if (treeWhosePropertyHasChanged == property_tree) {
+            property_atomics[property.toString()].store(float(property_tree.getProperty(property)));
+            parameter_modified_flags[property.toString()].store(true);
+        }
     }
 }
 
@@ -261,4 +287,5 @@ void StateManager::parameterChanged(const juce::String &parameterID, float newVa
     // might be called from audio thread, so must be thread safe
     preset_modified.store(true);
     any_parameter_changed.store(true);
+    parameter_modified_flags[parameterID].store(true);
 }

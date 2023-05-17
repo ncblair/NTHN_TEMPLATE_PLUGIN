@@ -33,7 +33,7 @@ def main():
     to_string_arrs = [l[10] for l in lines]
     to_string_arrs = [x.split() for x in to_string_arrs]
 
-    formatted = ["#pragma once", '#include <JuceHeader.h>']
+    formatted = ["#pragma once", '#include <juce_core/juce_core.h>']
 
     param_enum = ["enum PARAM {"]
     param_enum += ["\t" + p + "," for p in parameters]

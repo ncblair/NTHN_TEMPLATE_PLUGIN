@@ -21,6 +21,8 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     // Called after the constructor, but before playback starts
     // Use this to allocate up any resources you need, and to reset any
     // variables that depend on sample rate or block size
+    juce::ignoreUnused(samplesPerBlock);
+    juce::ignoreUnused(sampleRate);
 }
 
 void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
@@ -28,11 +30,11 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 {
     juce::ScopedNoDenormals noDenormals;
 
-    auto output_channels = size_t(getTotalNumOutputChannels());
-    auto num_samples = size_t(buffer.getNumSamples());
-    auto sr = getSampleRate();
+    // auto output_channels = size_t(getTotalNumOutputChannels());
+    // auto num_samples = size_t(buffer.getNumSamples());
+    // auto sr = getSampleRate();
 
-    auto read_pointers = buffer.getArrayOfReadPointers();
+    // auto read_pointers = buffer.getArrayOfReadPointers();
 
     //--------------------------------------------------------------------------------
     // read in some parameter values here, if you want
