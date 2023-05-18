@@ -178,10 +178,9 @@ juce::String StateManager::get_preset_name() {
 
 void StateManager::update_preset_modified() {
     // called from UI thread - updates preset_modified property, if the preset has been modified
-    if (preset_modified.load()) {
+    if (preset_modified.exchange(false)) {
         preset_tree.setProperty(PRESET_MODIFIED_ID, true, nullptr);
-        preset_modified.store(false);
-    }  
+    }
 }
 
 bool StateManager::get_parameter_modified(size_t param_id, bool exchange_value) {
