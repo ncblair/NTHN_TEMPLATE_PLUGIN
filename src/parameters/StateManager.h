@@ -30,7 +30,7 @@ StateManager manages Parameters, Properties, Presets
 class StateManager : public juce::ValueTree::Listener, public juce::AudioProcessorValueTreeState::Listener {
   public:
     StateManager(PluginProcessor* proc);
-    ~StateManager();
+    ~StateManager() override;
 
     //--------------------------------------------------------------------------------
     // the main api for accessing plugin state is param_value()
@@ -73,7 +73,7 @@ class StateManager : public juce::ValueTree::Listener, public juce::AudioProcess
     // Saving and Loading Presets, called from UI thread
     // preset_modified is true when any parameter has been changed, after loading a preset
     //--------------------------------------------------------------------------------
-    void save_preset(juce::String preset_name, bool collect_all=false);
+    void save_preset(juce::String preset_name);
     void load_preset(juce::String preset_name);
     void load_from(juce::XmlElement* xml);
     void set_preset_name(juce::String preset_name);

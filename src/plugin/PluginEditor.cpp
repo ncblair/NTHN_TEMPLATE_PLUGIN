@@ -9,7 +9,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (PluginProcesso
     : AudioProcessorEditor (&p), processorRef (p)
 {
     state = processorRef.state.get();
-    startTimerHz(TIMER_HZ);
+    startTimerHz(int(TIMER_HZ));
 
     // INIT UNDO/REDO
     undo_manager = state->get_undo_manager();
@@ -47,9 +47,9 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 void AudioPluginAudioProcessorEditor::resized()
 {
     // set the position of your components here
-    auto slider_size = proportionOfWidth(0.1f);
-    auto slider_x = proportionOfWidth(0.5f) - (slider_size / 2.0f);
-    auto slider_y = proportionOfHeight(0.5f) - (slider_size / 2.0f);
+    int slider_size = proportionOfWidth(0.1f);
+    int slider_x = proportionOfWidth(0.5f) - (slider_size / 2);
+    int slider_y = proportionOfHeight(0.5f) - (slider_size / 2);
     gain_slider->setBounds(slider_x, slider_y, slider_size, slider_size);
 }
 

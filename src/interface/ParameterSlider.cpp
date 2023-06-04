@@ -2,7 +2,7 @@
 #include "../parameters/StateManager.h"
 
 ParameterSlider::ParameterSlider(StateManager* s, size_t p_id) 
-    : juce::SettableTooltipClient(), juce::Component(), state(s), param_id(p_id + 1)
+    : juce::SettableTooltipClient(), juce::Component(), param_id(p_id + 1), state(s)
 {
     // param_id is initialized to p_id + 1 so that update_param_id runs on the first call
     update_param_id(p_id);
@@ -60,6 +60,7 @@ void ParameterSlider::mouseDown(const juce::MouseEvent& e) {
 void ParameterSlider::mouseDoubleClick(const juce::MouseEvent& e) {
     // double click to reset
     state->reset_parameter(param_id);
+    juce::ignoreUnused(e);
 }
 
 // void ParameterSlider::mouseUp(const juce::MouseEvent& e) {
@@ -89,8 +90,6 @@ void ParameterSlider::draw_rotary_slider(juce::Graphics& g, float slider_pos, fl
     const float radius = std::min(width / 2, height / 2) - 2.0f;
     const float centreX = x_ + width * 0.5f;
     const float centreY = y_ + height * 0.5f;
-    const float rx = centreX - radius;
-    const float ry = centreY - radius;
     const float rw = radius * 2.0f;
     const float angle = rotaryStartAngle + slider_pos * (rotaryEndAngle - rotaryStartAngle);
 

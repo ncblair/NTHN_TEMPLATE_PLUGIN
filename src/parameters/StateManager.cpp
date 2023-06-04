@@ -30,8 +30,8 @@ StateManager::StateManager(PluginProcessor* proc) :
                     [p_id](float value, int maximumStringLength) { // Float to String Precision 2 Digits
                         auto to_string_size = PARAMETER_TO_STRING_ARRS[p_id].size();
                         juce::String res;
-                        if (to_string_size > 0 && int(value) < to_string_size) {
-                            res = PARAMETER_TO_STRING_ARRS[p_id][int(value)];
+                        if (to_string_size > 0 && (unsigned int) value < to_string_size) {
+                            res = PARAMETER_TO_STRING_ARRS[p_id][(unsigned long)(value)];
                         }
                         else {
                             std::stringstream ss;
@@ -121,7 +121,7 @@ juce::ValueTree StateManager::get_state() {
     return state_tree;
 }
 
-void StateManager::save_preset(juce::String preset_name, bool collect_all) {
+void StateManager::save_preset(juce::String preset_name) {
     // not undo-able
     preset_tree.setProperty(PRESET_NAME_ID, preset_name, nullptr); 
     preset_tree.setProperty(PRESET_MODIFIED_ID, false, nullptr);
@@ -200,7 +200,6 @@ juce::RangedAudioParameter* StateManager::get_parameter(size_t param_id) {
 
 void StateManager::set_parameter(size_t param_id, float value) {
     if (PARAMETER_AUTOMATABLE[param_id]) {
-        auto parameter = get_parameter(param_id);
         auto range = PARAMETER_RANGES[param_id];
         auto normalized_value = range.convertTo0to1(range.snapToLegalValue(value));
         set_parameter_normalized(param_id, normalized_value);
@@ -287,4 +286,5 @@ void StateManager::parameterChanged(const juce::String &parameterID, float newVa
     preset_modified.store(true);
     any_parameter_changed.store(true);
     parameter_modified_flags[parameterID].store(true);
+    juce::ignoreUnused(newValue);
 }

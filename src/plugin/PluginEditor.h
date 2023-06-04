@@ -36,8 +36,8 @@ public:
 
 private:
     
-    const int TIMER_HZ = 60;
-    const int UNDO_HZ = 1;
+    const size_t TIMER_HZ = 60;
+    const size_t UNDO_HZ = 1;
     const int W = 900; // width
     const int H = 500; // height
     unsigned int timer_counter{0};
