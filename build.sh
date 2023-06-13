@@ -3,7 +3,7 @@
 python src/parameters/create_parameters.py
 
 PLUGIN_NAME="EXAMPLE"
-MODE="Debug"
+MODE="RelWithDebInfo"
 
 if ! [ -d "build" ]; then
   `mkdir -p build`

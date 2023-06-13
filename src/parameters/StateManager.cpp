@@ -35,7 +35,7 @@ StateManager::StateManager(PluginProcessor* proc) :
                         }
                         else {
                             std::stringstream ss;
-                            ss << std::fixed << std::setprecision(0) << value;
+                            ss << std::fixed << std::setprecision(2) << value;
                             res = juce::String(ss.str());
                         }
                         return (res + " " + PARAMETER_SUFFIXES[p_id]).substring(0, maximumStringLength);

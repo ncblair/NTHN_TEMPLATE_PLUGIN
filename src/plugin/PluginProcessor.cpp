@@ -1,8 +1,9 @@
-// Nathan Blair January 2023
+// Nathan Blair June 2023
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "../parameters/StateManager.h"
+#include "../audio/Gain.h"
 
 //==============================================================================
 PluginProcessor::PluginProcessor()
@@ -21,8 +22,8 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     // Called after the constructor, but before playback starts
     // Use this to allocate up any resources you need, and to reset any
     // variables that depend on sample rate or block size
-    juce::ignoreUnused(samplesPerBlock);
-    juce::ignoreUnused(sampleRate);
+
+    gain = std::make_unique<Gain>(float(sampleRate), samplesPerBlock, getTotalNumOutputChannels(), PARAMETER_DEFAULTS[PARAM::GAIN] / 100.0f);
 }
 
 void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
@@ -30,18 +31,12 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 {
     juce::ScopedNoDenormals noDenormals;
 
-    // auto output_channels = size_t(getTotalNumOutputChannels());
-    // auto num_samples = size_t(buffer.getNumSamples());
-    // auto sr = getSampleRate();
-
-    // auto read_pointers = buffer.getArrayOfReadPointers();
-
     //--------------------------------------------------------------------------------
     // read in some parameter values here, if you want
     // in this case, gain goes from 0 to 100 (see: ../parameters/parameters.csv)
     // so we normalize it to 0 to 1
     //--------------------------------------------------------------------------------
-    auto gain = state->param_value(PARAM::GAIN) / 100.0f;
+    auto requested_gain = state->param_value(PARAM::GAIN) / 100.0f;
 
     //--------------------------------------------------------------------------------
     // process samples below. use the buffer argument that is passed in.
@@ -49,8 +44,9 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // for a synth, buffer is filled with zeros, and you should fill it with output samples
     // see: https://docs.juce.com/master/classAudioBuffer.html
     //--------------------------------------------------------------------------------
-    buffer.applyGain(gain);
-
+    
+    gain->setGain(requested_gain);
+    gain->process(buffer);
     //--------------------------------------------------------------------------------
     // you can use midiMessages to read midi if you need. 
     // since we are not using midi yet, we clear the buffer.

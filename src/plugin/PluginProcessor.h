@@ -1,8 +1,9 @@
-// Nathan Blair January 2023
+// Nathan Blair June 2023
 
 #pragma once
 
 class StateManager;
+class Gain;
 
 #include <juce_audio_basics/juce_audio_basics.h>
 
@@ -29,6 +30,9 @@ public:
     std::unique_ptr<StateManager> state;
 
   private:
+
+    std::unique_ptr<Gain> gain;
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };

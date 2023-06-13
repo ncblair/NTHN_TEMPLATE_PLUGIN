@@ -34,7 +34,6 @@ project($ENV{PLUGIN_NAME} VERSION $ENV{VERSION_STRING})
 #--------------------------------------------------------------------------------
 
 add_subdirectory(JUCE) # If you've put JUCE in a subdirectory
-# add_subdirectory (modules/melatonin_perfetto)
 
 #--------------------------------------------------------------------------------
 # If you are building a VST2 or AAX plugin, CMake needs to be told where to find these SDKs on your
@@ -97,6 +96,7 @@ target_sources($ENV{PLUGIN_NAME}
         src/plugin/PluginEditor.cpp
         src/parameters/StateManager.cpp
         src/interface/ParameterSlider.cpp
+        src/audio/Gain.cpp
         )
 
 #--------------------------------------------------------------------------------
@@ -139,7 +139,6 @@ target_link_libraries($ENV{PLUGIN_NAME}
     PRIVATE
         # AudioPluginData           # If we'd created a binary data target, we'd link to it here
         juce::juce_audio_utils
-        # Melatonin::Perfetto
     PUBLIC
         juce::juce_recommended_config_flags
         juce::juce_recommended_lto_flags
