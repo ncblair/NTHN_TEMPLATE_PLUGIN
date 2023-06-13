@@ -1,6 +1,7 @@
 # The Template Plugin
 
-The template plugin is a starting point for new JUCE plugin projects. The main contribution of the template plugin is the 'StateManager' class, which provides an API (Application Programming Interface) for real-time safe interaction with the state of the plugin between threads. Furthermore, I include real-time safe interface sliders that interact with the StateManager via polling. 
+The Template Plugin is a starting point for new JUCE plugin projects that builds on the best practices and creative solutions I have accumulated making plugins. The main contribution of The Template Plugin is the 'StateManager' class, which provides an API (Application Programming Interface) for real-time safe interaction with the state of the plugin between threads. Furthermore, I include real-time safe interface sliders that interact with the StateManager via polling, I provide an example audio processing class which modulates the gain of an incoming signal, and I include instructions for expanding on the template. 
+
 
 ## Downloading the Template
 
@@ -57,7 +58,7 @@ By default, you should see a green background with a single slider that modulate
 
 ## Editing Plugin Parameters in the Template Plugin
 
-The template enables easy creation and modification of plugin parameters. The typical process for creating parameters in JUCE is bulky and requires many line of code for a single parameter:
+The Template Plugin enables easy creation and modification of plugin parameters. The typical process for creating parameters in JUCE is bulky and requires many lines of code for a single parameter. Consider the following block of code, which connects a single gain parameter to the host program. 
 
 ```c++
 std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
@@ -93,13 +94,13 @@ apvts.reset(new juce::AudioProcessorValueTreeState(
 ));
 ```
 
-It's inconvenient to type all of this code every time you want to add a new plugin parameter. Instead, I set relevant parameter metadata in a csv file, `src/parameters/parameters.csv`. Adding a parameter becomes as simple as defining the relevant information in a table. 
+It's inconvenient to type this code every time you want to add a new plugin parameter. Instead, I set relevant parameter metadata in a .csv file, `parameters/parameters.csv`. Adding a parameter becomes as simple as defining the relevant information in a table. 
 
 PARAMETER | MIN | MAX | GRAIN | EXP | DEFAULT | AUTOMATABLE | NAME | SUFFIX | TOOLTIP | TO_STRING_ARR
 --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
 GAIN | -60 | 6 | 0 | 1 | 0 | 1 | Gain | db | The gain in decibels |
 
-To convert between table data and JUCE parameters, a pre-build python script reads the `parameters.csv` file and generates c++ code that the StateManager class can use to create plugin parameters. This code is exported to the file `src/parameters/ParameterDefines.h` as a number of arrays of useful parameter information which can be accessed by the rest of the code. Any code that imports `src/parameters/StateManager.h` will also have access to the definitions in `ParameterDefines.h`. This c++ file also defines an enum which can be used to reference parameters. The following code shows how to access various attributes of a parameter from within the codebase:
+To convert between table data and JUCE parameters, a pre-build python script reads the `parameters.csv` file and generates C++ code that the StateManager class can use to create plugin parameters. This code is exported to the file `parameters/ParameterDefines.h` as a number of arrays of useful parameter information which can be accessed by the rest of the codebase. Any code that imports `parameters/StateManager.h` will also have access to the definitions in `ParameterDefines.h`. The following code shows how to access various attributes of a parameter from within the codebase, using the `PARAM` enum:
 
 ```c++
 #include "parameters/StateManager.h"
@@ -118,27 +119,32 @@ int v = int(state->param_value(PARAM::TYPE));
 juce::String string_repr_of_param = PARAMETER_TO_STRING_ARRS[PARAM::TYPE][v];
 ```
 
-For more information about accessing the parameters of the plugin, reference `parameters/StateManager.h`.
+The `StateManager` class provides a number of real-time safe ways to interact with the underlying parameters and state of the plugin project. To access plugin state from any thread, `StateManager::param_value` provides atomic load access to plugin parameters. Furthermore, there are a number of `StateManager` methods that change the underlying state of the plugin from the message thread, including `StateManager::set_parameter`, `StateManager::reset_parameter`, and `StateManager::randomize_parameter`.
+
+Managing plugin presets with the `StateManager` is simple. For most plugins, `StateManager` can automatically handle preset management with the `StateManager::save_preset` and `StateManager::load_preset` methods. For more complicated plugins with state that cannot be expressed as floating point parameters, such as plugins with user-defined LFO curves, presets will continue to work as long as all relevant data is stored in the `StateManager::state_tree` `ValueTree` object returned by `StateManager::get_state`. This will likely require modifications in the `StateManager::get_state` method. 
+
+For more information about accessing the parameters of the plugin, reference the code and comments in `src/parameters/StateManager.h`.
 
 ## Editing Audio Code in the Template Plugin
 
-Audio code in the template plugin belongs in the `PluginProcessor` class, which is defined in the files `PluginProcessor.cpp` and `PluginProcessor.h`. The `PluginProcessor::processBlock` is the main audio callback, invoked once per audio block. This function takes in a buffer of audio samples and a buffer of midi messages and fills the input buffer with the desired output samples. 
+The audio callback in The Template Plugin can be found in the `PluginProcessor` class, which is defined in the files `src/plugin/PluginProcessor.cpp` and `src/plugin/PluginProcessor.h`. The `PluginProcessor::processBlock` is invoked once per audio block by the host, and returns samples to the speaker. This function takes in a buffer of audio samples and a buffer of midi messages and fills the input buffer with the desired output samples. 
 
-By default, the template plugin code applies a gain parameter to the audio buffer in the `processBlock`, shown below:
+By default, The Template Plugin code applies a gain parameter to the audio buffer in the `processBlock`, shown below:
 
 ```c++
 void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                               juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    // ...
+
+    //...
 
     //--------------------------------------------------------------------------------
     // read in some parameter values here, if you want
     // in this case, gain goes from 0 to 100 (see: ../parameters/parameters.csv)
     // so we normalize it to 0 to 1
     //--------------------------------------------------------------------------------
-    auto gain = state->param_value(PARAM::GAIN) / 100.0f;
+    auto requested_gain = state->param_value(PARAM::GAIN) / 100.0f;
 
     //--------------------------------------------------------------------------------
     // process samples below. use the buffer argument that is passed in.
@@ -146,8 +152,9 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // for a synth, buffer is filled with zeros, and you should fill it with output samples
     // see: https://docs.juce.com/master/classAudioBuffer.html
     //--------------------------------------------------------------------------------
-    buffer.applyGain(gain);
-
+    
+    gain->setGain(requested_gain);
+    gain->process(buffer);
     //--------------------------------------------------------------------------------
     // you can use midiMessages to read midi if you need. 
     // since we are not using midi yet, we clear the buffer.
@@ -156,11 +163,32 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 }
 ```
 
-To access plugin parameters from the process block, invoke the `StateManager::param_value` method by passing the enum of the desired parameter, as defined in `parameters/ParameterDefines.h` and equivalently in `parameters/parameters.csv`. 
+For real-time safe access to plugin parameters from the process block, invoke the `StateManager::param_value` method by passing the enum of the desired parameter, as defined in `parameters/ParameterDefines.h` and equivalently in `parameters/parameters.csv`. 
+
+The gain parameter is applied to the audio buffer via the `Gain` class, defined in `src/audio/Gain.h`. The `Gain` class smooths the `Gain` parameter before modulating the amplitude of the incoming signal to avoid clicks and pops on sudden parameter changes:
+
+```c++
+void Gain::process(juce::AudioBuffer<float>& buffer) {
+    // IIR filter to smooth parameters between audio callbacks
+    float target_gain = gain * (1.0 - iir_gamma) + requested_gain * iir_gamma;
+
+    // Snap to target value if difference is small, avoiding denormals
+    if (std::abs(target_gain - requested_gain) < 0.0001) 
+        target_gain = requested_gain;
+
+    // Linear interpolation to efficiently smooth parameters within the audio callback
+    buffer.applyGainRamp(0, buffer.getNumSamples(), gain, target_gain);
+
+    // update internal gain parameter according to IIR filter output
+    gain = target_gain;
+}
+```
+
+The `Gain` class can be used as a starting point for more complicated digital signal processing algorithms. To implement audio algorithms that require additional memory, all memory should be allocated within the `PluginProcessor` constructor and `PluginProcessor::prepareToPlay` methods. Audio processing classes may be dynamically constructed within the `PluginProcessor::prepareToPlay` method if access to the plugin sample rate, block size, or number of output channels is required. I use the `std::unique_ptr` object to dynamically allocate audio objects in the `PluginProcessor`; as long as memory is allocated in the constructor or `prepareToPlay` method, allocation will occur before the audio callback is invoked and thus be real-time safe. 
 
 ## Editing Interface Code in the Template Plugin
 
-To edit the user interface, define user interface components in `plugin/PluginEditor.h`. 
+The plugin user interface can be modified from the `src/plugin/PluginEditor.h` and `src/plugin/PluginEditor.cpp` files. `ParameterSlider` objects can be wrapped in `std::unique_ptr` objects so that it is not necessary to include the `ParameterSlider.h` file from the `PluginEditor.h` header file, reducing compilation time. 
 
 ```c++
 // PluginEditor.h, private:
@@ -171,7 +199,7 @@ private:
     std::unique_ptr<ParameterSlider> parameter_2_slider;
 ```
 
-Then, add, position, and trigger repaint calls for UI elements in `plugin/PluginEditor.cpp`. 
+Then, sliders may be created and positioned in the `plugin/PluginEditor.cpp` file. Use the `AudioPluginAudioProcessorEditor::timerCallback` method to poll for state changes and trigger UI repainting. Polling from the timer callback enables efficient and real-time safe repainting from the message thread. 
 
 ```c++
 // Add elements in the constructor
@@ -256,3 +284,9 @@ Timur Doumler's talk on [thread synchronization in real-time audio processing](h
 The second edition of [The Computer Music Tutorial](https://www.amazon.com/Computer-Music-Tutorial-MIT-Press/dp/0262680823) by Curtis Roads is a comprehensive and essential reference for all aspects of computer music. Furthermore, Julius O. Smith has a number of [books and tutorials](https://ccrma.stanford.edu/~jos/pubs.html) that are freely available online about physical modeling, digital filters, and other digital signal processing topics. The comprehensive [DAFX](https://www.dafx.de/DAFX_Book_Page_2nd_edition/index.html) book is another useful reference for implementing digital audio effects.
 
 Finally, Oli Larkin's [More Awesome Music DSP](https://github.com/olilarkin/awesome-musicdsp), Jared Drayton's [Audio Plugin Development Resources](https://github.com/jareddrayton/Audio-Plugin-Development-Resources), and Sudara William's [Awesome Juce](https://github.com/sudara/awesome-juce) are comprehensive lists of resources for audio programmers, which go well beyond the scope of this project and include a number of additional references. 
+
+# Legal
+
+While this repository is released under the MIT License, portions of the codebase are from JUCE and fall under the JUCE License. 
+VST and VST3 are trademarks of Steinberg Media Technologies GmbH. 
+Audio Unit is a trademark of Apple, Inc. 
