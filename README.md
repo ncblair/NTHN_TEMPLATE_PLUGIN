@@ -58,7 +58,7 @@ By default, you should see a green background with a single slider that modulate
 
 ## Editing Plugin Parameters in the Template Plugin
 
-The Template Plugin enables easy creation and modification of plugin parameters. The typical process for creating parameters in JUCE is bulky and requires many lines of code for a single parameter. Consider the following block of code, which connects a single gain parameter to the host program. 
+The Template Plugin enables easy creation and modification of plugin parameters via the `src/parameters/parameters.csv` file. The typical process for creating parameters in JUCE is bulky and requires many lines of code for a single parameter. Consider the following block of code, which connects a single gain parameter to the host program. 
 
 ```c++
 std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
@@ -94,7 +94,7 @@ apvts.reset(new juce::AudioProcessorValueTreeState(
 ));
 ```
 
-It's inconvenient to type this code every time you want to add a new plugin parameter. Instead, I set relevant parameter metadata in a .csv file, `parameters/parameters.csv`. Adding a parameter becomes as simple as defining the relevant information in a table. 
+It's inconvenient to type this code every time you want to add a new plugin parameter. Instead, I set relevant parameter metadata in a .csv file, `src/parameters/parameters.csv`. Adding a parameter becomes as simple as defining the relevant information in a table. 
 
 PARAMETER | MIN | MAX | GRAIN | EXP | DEFAULT | AUTOMATABLE | NAME | SUFFIX | TOOLTIP | TO_STRING_ARR
 --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
