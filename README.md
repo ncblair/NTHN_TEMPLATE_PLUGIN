@@ -220,3 +220,39 @@ void AudioPluginAudioProcessorEditor::timerCallback() {
 }
 
 ```
+
+# Related Works and Resources
+
+## Template Plugins
+
+There are a number of existing open source plugin projects and templates. 
+
+The Template Plugin is directly modified from the JUCE framework [CMake Audio Plugin Example](https://github.com/juce-framework/JUCE/tree/master/examples/CMake/AudioPlugin), included in the JUCE library. The CMake Audio Plugin Example provides a minimal framework for exporting audio plugins from JUCE with CMake. It comes with an `AudioPluginAudioProcessor` class for handling interactions with the audio thread and an `AudioPluginAudioProcessorEditor` class for handling interactions with the message thread. The CMake Audio Plugin Example is minimal and unopinionated; it does not provide any system for parameter management, leaving the developer to create their own real-time safe state management system. 
+
+*Pamplejuce* is an open source JUCE Template that supports, along with CMake, a testing system with the Catch2 framework, C++20, and a GitHub Actions configuration for building cross platform, testing, and code-signing. *Pamplejuce* is developed by Sudara Williams and is licensed under the MIT license. *Pamplejuce* builds on the JUCE CMake Audio Plugin Example by adding features necessary for distributing professional plugins. Compared to The Template Plugin, *pamplejuce* has a less opinionated approach for state management, using essentially the same source code as the JUCE CMake Audio Plugin Example with a more sophisticated build system. 
+
+Nicholas Berriochoa's *juce-template* is an open source audio plugin template which is most similar in scope to my Template Plugin. In particular, Nicholas Berriochoa's implementation includes logic for a state management system that wraps plugin parameters and internal plugin settings, as well as other useful features that go beyond The Template Plugin such as react-js user interfaces, Rust-based digital signal processing, testing, and key verification.
+
+*Surge XT* is an award winning open source software synthesizer built in C++ with a JUCE-based user interface. *Surge XT* is released under the GNU GPLv3 license, and is a powerful reference for the digital signal processing and design patterns that go into a commercial-quality product. *Surge XT* supports a number of build platforms including MacOS, Windows, Linux, and Raspberry Pi. Furthermore, *Surge XT* can be built in the new CLAP plugin format. 
+
+*valentine* is an open source compressor plugin developed by Jose Diaz Rohena. It is a great example of a simple plugin built using the JUCE framework. *valentine* is released under the GNU GPLv3 license. 
+
+*Vital* is a popular "spectral warping wavetable synthesizer" by Matt Tytel released under GNU GPLv3. *Vital* is a massive project built on JUCE but with mostly custom code in C++. Furthermore, *Vital* uses hardware accelerated graphics for performant and detailed visualization in the UI. *Vital* is a great resource for understanding how a large plugin project can be organized. 
+
+## Plugin Resources
+
+Developing my own system for writing audio plugins has relied heavily on numerous plugin development tutorials and resources.
+
+JUCE provides a series of beginner friendly [tutorials](https://juce.com/learn/tutorials/) for getting started with plugin development using the JUCE library. Unfortunately, some of these tutorials do not strictly adhere to the principals of real-time safe audio programming. Despite this, they are useful for developing an understanding of the JUCE framework. Furthermore, the [JUCE forum](https://forum.juce.com/) contains a plethora of valuable questions and conversations between developers. 
+
+Joshua Hodge, better known as The Audio Programmer, has fostered a large community of audio developers around his YouTube and Discord channels. [The Audio Programmer YouTube channel](https://www.youtube.com/@TheAudioProgrammer) contains recordings of in-depth coding sessions and valuable interviews with developers. Furthermore, The Audio Programmer Discord community is one of the best places to search for plugin development questions, as many topics have been addressed in the Discord that are not posted on online forums. 
+
+The Audio Developers Conference is an annual professional developers conference hosted by JUCE. Recordings of talks from the Audio Developers Conference are posted online at the [JUCE Youtube channel](https://www.youtube.com/@JUCElibrary/videos) – these talks are an essential resource for understanding some of the more subtle aspects of audio programming, such as real-time safe programming, distribution, testing, and new approaches. 
+
+Timur Doumler's talk on [thread synchronization in real-time audio processing](https://www.youtube.com/watch?v=7fKxIZOyBCE) and Fabian Renn-Giles and Dave Rowland's talk [Real-Time 101](https://www.youtube.com/watch?v=Q0vrQFyAdWI) have been essential to my understanding of real-time programming and the development of this project. Timur Doumler has also released an open source library of low-latency real-time programming in C++, [Crill](https://github.com/crill-dev/crill), which implements some of the more sophisticated thread synchronization algorithms that I discuss in this paper. For another great reference on real-time safe audio programming, see Ross Bencina's blog post [Real-Time Audio Programming 101: Time Waits for Nothing](http://www.rossbencina.com/code/real-time-audio-programming-101-time-waits-for-nothing).
+
+[Sudara Williams' blog](https://melatonin.dev/blog/) provides a number of detailed tutorials on optimizing, profiling, and testing audio plugins. This blog has informed my understanding of the JUCE repainting system and the best ways to profile plugin projects. 
+
+The second edition of [The Computer Music Tutorial](https://www.amazon.com/Computer-Music-Tutorial-MIT-Press/dp/0262680823) by Curtis Roads is a comprehensive and essential reference for all aspects of computer music. Furthermore, Julius O. Smith has a number of [books and tutorials](https://ccrma.stanford.edu/~jos/pubs.html) that are freely available online about physical modeling, digital filters, and other digital signal processing topics. The comprehensive [DAFX](https://www.dafx.de/DAFX_Book_Page_2nd_edition/index.html) book is another useful reference for implementing digital audio effects.
+
+Finally, Oli Larkin's [More Awesome Music DSP](https://github.com/olilarkin/awesome-musicdsp), Jared Drayton's [Audio Plugin Development Resources](https://github.com/jareddrayton/Audio-Plugin-Development-Resources), and Sudara William's [Awesome Juce](https://github.com/sudara/awesome-juce) are comprehensive lists of resources for audio programmers, which go well beyond the scope of this paper and include a number of additional references. 
