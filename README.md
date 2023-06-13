@@ -2,11 +2,9 @@
 
 The template plugin is a starting point for new JUCE plugin projects. The main contribution of the template plugin is the 'StateManager' class, which provides an API (Application Programming Interface) for real-time safe interaction with the state of the plugin between threads. Furthermore, I include real-time safe interface sliders that interact with the StateManager via polling. 
 
-The template plugin is on github at https://github.com/ncblair/NTHN_TEMPLATE_PLUGIN.
-
 ## Downloading the Template
 
-To download the template plugin, clone the repository from github. Update submodules to get a copy of the JUCE library in the same folder.
+To download The Template Plugin, clone the repository from GitHub. Update submodules to get a copy of the JUCE library in the same folder.
 
 ```sh
 git clone https://github.com/ncblair/NTHN_TEMPLATE_PLUGIN.git
@@ -14,7 +12,7 @@ cd NTHN_TEMPLATE_PLUGIN
 git submodule update --recursive --init --remote
 ```
 
-Alternatively, if you would like to set up your own git repository with the code from the template plugin, you can create a new repository from a template using the github CLI tool `gh`.
+Alternatively, if you would like to set up your own git repository with the code from The Template Plugin, you can create a new repository from a template using the github CLI tool `gh`.
 
 ```sh
 # If this is your first time using gh, install it and log in
@@ -31,35 +29,23 @@ git submodule update --recursive --init --remote
 
 ## Compiling the Template
 
-1. First, open `CmakeLists.txt` in a text editor. Set your plugin name, version number, version string, company name, manufacturer id, and plugin id at the top of the file.
+First, open `CMakeLists.txt` in a text editor. Set your plugin name, version number, version string, company name, manufacturer id, and plugin id at the top of the file.
 
-2. Open `build.sh` in a text editor. Set the plugin name and build mode at the top of the file. Use the same plugin name that you used in `CmakeLists.txt`. Possible build modes include `Debug`, `Release`, `RelWithDebInfo` and `MinSizeRel`.
+On MacOS, open `build.sh` in a text editor. Set the plugin name and build mode at the top of the file. Use the same plugin name that you used in `CMakeLists.txt`. Possible build modes include `Debug`, `Release`, `RelWithDebInfo` and `MinSizeRel`.
 
-3. Run the build script
-```sh
-./build.sh
-```
-<!-- 
-### Configure B
-
-### Building on MacOS
-
-**Build Directions: (MacOS)**
-
+Then, run the build script
 ```sh
 ./build.sh
 ```
 
-Then, open the plugin called "EXAMPLE" in your DAW of choice or run the standalone app which can be found in  *build/EXAMPLE_artefacts/Debug/Standalone/EXAMPLE.app*
+On Windows, run the following code:
 
-**Build Directions: (windows):**
-
-```cmd
+```sh
 mkdir build
 cd build
 cmake ..
 cmake --build . # (--config Release/Debug/...)
-``` -->
+```
 
 ## Running the Template Plugin
 
@@ -67,7 +53,7 @@ If compiling was successful, you should already be able to run the plugin in you
 
 To run the plugin as a standalone application, run the file found in  *build/EXAMPLE_artefacts/Debug/Standalone/EXAMPLE.app*
 
-By default, you should see a green background. 
+By default, you should see a green background with a single slider that modulates the gain of the incoming signal. 
 
 ## Editing Plugin Parameters in the Template Plugin
 
