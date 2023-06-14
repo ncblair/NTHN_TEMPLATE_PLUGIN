@@ -2,6 +2,7 @@
 
 The Template Plugin is a starting point for new JUCE plugin projects that emphasizes real-time safety. The main contribution of The Template Plugin is the 'StateManager' class, which provides an API for real-time safe interaction with the state of the plugin between threads. Furthermore, I include real-time safe interface sliders that interact with the StateManager via polling, I provide an example audio processing class which modulates the gain of an incoming signal, and I include instructions for adding custom code. 
 
+![](ignore/cover.svg)
 
 ## Downloading the Template
 
