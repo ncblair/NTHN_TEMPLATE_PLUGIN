@@ -27,5 +27,6 @@ class ParameterSlider : public juce::SettableTooltipClient, public juce::Compone
     void draw_rotary_slider(juce::Graphics& g, float normed_value, float x=0.25f, float y=0.25f, float w=0.5f, float h=0.5f);
 
     float pixels_per_percent{100.0f};
+    float cur_normed_value{0.0f};
     juce::Point<int> last_mouse_position;
 };

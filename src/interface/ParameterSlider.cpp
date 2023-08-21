@@ -53,6 +53,8 @@ void ParameterSlider::mouseDown(const juce::MouseEvent& e) {
     }
     else {
         // left click to start dragging
+        // last_mouse_position = e.getPosition();
+        cur_normed_value = PARAMETER_RANGES[param_id].convertTo0to1(state->param_value(param_id));
         last_mouse_position = e.getPosition();
     }
 }
@@ -68,15 +70,12 @@ void ParameterSlider::mouseDoubleClick(const juce::MouseEvent& e) {
 
 void ParameterSlider::mouseDrag(const juce::MouseEvent& e) {
     // change parameter value
-    auto cur_position = e.getPosition();
-    auto change = cur_position - last_mouse_position;
-    auto speed = (e.mods.isShiftDown() ? 0.05f : 1.0f) * pixels_per_percent;
+    auto change = e.getPosition() - last_mouse_position;
+    last_mouse_position = e.getPosition();
+    auto speed = (e.mods.isShiftDown() ? 20.0f : 1.0f) * pixels_per_percent;
     auto slider_change = float(change.getX() - change.getY()) / speed;
-    auto cur_val = state->param_value(param_id);
-    auto normed_val = PARAMETER_RANGES[param_id].convertTo0to1(cur_val);
-    auto new_val = normed_val + slider_change;
-    state->set_parameter_normalized(param_id, new_val);
-    last_mouse_position = cur_position;
+    cur_normed_value += slider_change;
+    state->set_parameter_normalized(param_id, cur_normed_value);
 }
 
 void ParameterSlider::draw_rotary_slider(juce::Graphics& g, float slider_pos, float x, float y, float w, float h) {
