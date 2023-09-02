@@ -226,7 +226,7 @@ void StateManager::set_parameter_normalized(size_t param_id, float normalized_va
 
 void StateManager::randomize_parameter(size_t param_id, float min, float max) {
     // min, max between 0 and 1
-    jassert(min > 0.0f && max < 1.0f && max >= min);
+    jassert(min >= 0.0f && max <= 1.0f && max >= min);
     auto value = rng.nextFloat() * (max - min) + min;
     if (PARAMETER_AUTOMATABLE[param_id]) {
         auto parameter = get_parameter(param_id);
