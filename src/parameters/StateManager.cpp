@@ -137,7 +137,7 @@ void StateManager::save_preset(juce::String preset_name) {
     auto plugin_state = get_state();
     
     std::unique_ptr<juce::XmlElement> xml (plugin_state.createXml());
-    auto temp = juce::File::createTempFile("waveshine_preset_temp");
+    auto temp = juce::File::createTempFile("preset_temp");
     xml->writeTo(temp);
     temp.replaceFileIn(file);
 }
