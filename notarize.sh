@@ -69,6 +69,3 @@ spctl --verbose --assess --type install "${PLUGIN_NAME}_MacOS_v_${VERSION_UNDERS
 cd ..
 rm -r tmp
 echo "Done!"
-
-# Wait for email (wait a few minutes), and then when success email is received, staple the ticket to the installer
-#sudo xcrun stapler staple install/$PLUGIN_NAME_MacOS_v_1_0.pkg
