@@ -10,7 +10,6 @@ PLUGIN_NAME="EXAMPLE"
 DEVELOPER_ID="USER NAME (XXXXXXXXXX)"
 APP_PASS="xxxx-xxxx-xxxx-xxxx"
 APPLE_ID="email@icloud.com"
-IDENTIFIER="com.xxxx.pkg"
 VERSION="1.0"
 VERSION_UNDERSCORES="1_0"
 
@@ -59,8 +58,14 @@ gsed -i~ "3i\    <title>$PLUGIN_NAME</title>" distribution.xml
 productbuild --distribution distribution.xml --resources resources/ "$PLUGIN_NAME".pkg
 productsign --sign "Developer ID Installer: $DEVELOPER_ID" "$PLUGIN_NAME".pkg "$PLUGIN_NAME"_MacOS_v_"$VERSION_UNDERSCORES".pkg
 
-# notarize the installer
-xcrun altool --notarize-app --primary-bundle-id "$IDENTIFIER" --username "$APPLE_ID" --password "$APP_PASS" --file "$PLUGIN_NAME"_MacOS_v_"$VERSION_UNDERSCORES".pkg
+# Submit the final installer package for notarization
+xcrun notarytool submit --wait --apple-id "$APPLE_ID" --password "$APP_PASS" --team-id "$TEAM_ID" "${PLUGIN_NAME}_MacOS_v_${VERSION_UNDERSCORES}.pkg"
+xcrun stapler staple "${PLUGIN_NAME}_MacOS_v_${VERSION_UNDERSCORES}.pkg"
+
+# Verify that the package works
+spctl --verbose --assess --type install "${PLUGIN_NAME}_MacOS_v_${VERSION_UNDERSCORES}.pkg"
+
+
 cd ..
 rm -r tmp
 echo "Done!"
