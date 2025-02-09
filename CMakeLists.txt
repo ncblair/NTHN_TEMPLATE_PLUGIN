@@ -26,7 +26,6 @@ cmake_minimum_required(VERSION 3.15)
 
 project($ENV{PLUGIN_NAME} VERSION $ENV{VERSION_STRING})
 
-
 #--------------------------------------------------------------------------------
 # Include JUCE (as a subdirectory)
 # It is recommended to have a separate JUCE subdirectory for every project you create. 

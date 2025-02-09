@@ -15,6 +15,7 @@ class ParameterSlider : public juce::SettableTooltipClient, public juce::Compone
     void mouseDown(const juce::MouseEvent& e) override;
     void mouseDrag(const juce::MouseEvent& e) override;
     void mouseDoubleClick(const juce::MouseEvent& e) override;
+    void mouseUp(const juce::MouseEvent& e) override;
 
     enum ColourIds {
         backgroundColourId,
@@ -25,8 +26,8 @@ class ParameterSlider : public juce::SettableTooltipClient, public juce::Compone
     StateManager* state;
   private:
     void draw_rotary_slider(juce::Graphics& g, float normed_value, float x=0.25f, float y=0.25f, float w=0.5f, float h=0.5f);
+    float get_current_knob_position(); // 0 to 1
 
     float pixels_per_percent{100.0f};
-    float cur_normed_value{0.0f};
     juce::Point<int> last_mouse_position;
 };

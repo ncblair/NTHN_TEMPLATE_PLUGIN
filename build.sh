@@ -9,17 +9,35 @@ if ! [ -d "build" ]; then
   `mkdir -p build`
 fi
 
-Architecture=$(uname -m)
+# "./build.sh -m Debug", for example
+while getopts "m:" flag
+do
+    case "${flag}" in
+        m) MODE=${OPTARG};;
+        *)
+            echo "Invalid option: -${flag}" >&2
+            exit 1
+            ;;
+    esac
+done
+
+ARCH=$(uname -m)
+
+echo "=================
+PLUGIN: ${PLUGIN_NAME}
+MODE: ${MODE}
+ARCHITECTURE: ${ARCH}
+================"
 
 cd build
-if [ $Architecture = 'x86_64' ]; then
+if [ $ARCH = 'x86_64' ]; then
   cmake -DCMAKE_OSX_ARCHITECTURES="x86_64" -DCMAKE_BUILD_TYPE="$MODE" ..
-elif [ $Architecture = 'arm64' ]; then
+elif [ $ARCH = 'arm64' ]; then
   cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_BUILD_TYPE="$MODE" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 ..
 fi
 
 cd ..
-cmake --build build
+cmake --build build -j8 --config ${MODE}
 
 result=$?
 

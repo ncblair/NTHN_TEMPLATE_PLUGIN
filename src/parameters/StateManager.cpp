@@ -198,6 +198,20 @@ juce::RangedAudioParameter* StateManager::get_parameter(size_t param_id) {
     }
 }
 
+void StateManager::begin_change_gesture(size_t param_id) {
+    if (PARAMETER_AUTOMATABLE[param_id]) {
+        auto parameter = get_parameter(param_id);
+        parameter->beginChangeGesture();
+    }
+}
+
+void StateManager::end_change_gesture(size_t param_id) {
+    if (PARAMETER_AUTOMATABLE[param_id]) {
+        auto parameter = get_parameter(param_id);
+        parameter->endChangeGesture();
+    }
+}
+
 void StateManager::set_parameter(size_t param_id, float value) {
     if (PARAMETER_AUTOMATABLE[param_id]) {
         auto range = PARAMETER_RANGES[param_id];
@@ -214,9 +228,7 @@ void StateManager::set_parameter_normalized(size_t param_id, float normalized_va
     else if (normalized_value < 0.0) normalized_value = 0.0;
     if (PARAMETER_AUTOMATABLE[param_id]) {
         auto parameter = get_parameter(param_id);
-        parameter->beginChangeGesture();
         parameter->setValueNotifyingHost(normalized_value);
-        parameter->endChangeGesture();
     }
     else {
         auto unnormalized_value = PARAMETER_RANGES[param_id].convertFrom0to1(normalized_value);
@@ -230,9 +242,7 @@ void StateManager::randomize_parameter(size_t param_id, float min, float max) {
     auto value = rng.nextFloat() * (max - min) + min;
     if (PARAMETER_AUTOMATABLE[param_id]) {
         auto parameter = get_parameter(param_id);
-        parameter->beginChangeGesture();
         parameter->setValueNotifyingHost(value);
-        parameter->endChangeGesture();
     }
     else {
         auto range = PARAMETER_RANGES[param_id];
