@@ -50,6 +50,8 @@ class StateManager : public juce::ValueTree::Listener, public juce::AudioProcess
     // an example might be setting parameters from a custom knob or button component
     //--------------------------------------------------------------------------------
     juce::RangedAudioParameter* get_parameter(size_t param_id);
+    void begin_change_gesture(size_t param_id);
+    void end_change_gesture(size_t param_id);
     void set_parameter(size_t param_id, float value);
     void set_parameter_normalized(size_t param_id, float normalized_value);
     void randomize_parameter(size_t param_id, float min = 0.0f, float max = 1.0f);
