@@ -44,9 +44,7 @@ void ParameterSlider::paint(juce::Graphics &g)
 void ParameterSlider::update_param_id(size_t p_id)
 {
     if (param_id == p_id)
-    {
         return;
-    }
 
     param_id = p_id;
     setTooltip(PARAMETER_TOOLTIPS[param_id]);
