@@ -55,11 +55,14 @@ void AudioPluginAudioProcessorEditor::resized()
 
 void AudioPluginAudioProcessorEditor::timerCallback() {
     // repaint UI and note that we have updated ui, if parameter values have changed
-    if (state->any_parameter_changed.exchange(false)) {
-        if (state->get_parameter_modified(PARAM::GAIN)) {
-            gain_slider->repaint();
+    for (size_t i {0}; i < TOTAL_NUMBER_PARAMETERS; ++i) {
+        if (state->get_parameter_modified(i)) {
+            auto& components = state->get_component(i);
+            for (auto& component : components)
+                component->repaint();
         }
     }
+
     state->update_preset_modified();
 
     if (timer_counter % (TIMER_HZ / UNDO_HZ) == 0 ) {

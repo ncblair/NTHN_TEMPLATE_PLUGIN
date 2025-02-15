@@ -37,7 +37,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // so we normalize it to 0 to 1
     //--------------------------------------------------------------------------------
     auto requested_gain = state->param_value(PARAM::GAIN) / 100.0f;
-
+    DBG(requested_gain);
     //--------------------------------------------------------------------------------
     // process samples below. use the buffer argument that is passed in.
     // for an audio effect, buffer is filled with input samples, and you should fill it with output samples

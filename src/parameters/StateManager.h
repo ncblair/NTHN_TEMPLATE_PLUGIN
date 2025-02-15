@@ -124,6 +124,15 @@ class StateManager : public juce::ValueTree::Listener, public juce::AudioProcess
     std::atomic<bool> any_parameter_changed{false};
     std::atomic<bool> preset_modified{true};
 
+    //--------------------------------------------------------------------------------
+    // each component registers itself with the state manager
+    // allowing the PluginEditor to loop over each component registerd with the state manager and call repaint()
+    // if the value of the underlying parameter has changed
+    //--------------------------------------------------------------------------------
+    void register_component(size_t id, juce::Component* component);
+    void unregister_component(size_t id, juce::Component* component);
+    std::vector<juce::Component*>& get_component(size_t id) { return param_to_component.at(id); }
+
   private:
     // state
     juce::ValueTree state_tree;
@@ -131,6 +140,7 @@ class StateManager : public juce::ValueTree::Listener, public juce::AudioProcess
     juce::ValueTree property_tree;
     std::unordered_map<juce::String, std::atomic<float>> property_atomics;
     std::unordered_map<juce::String, std::atomic<bool>> parameter_modified_flags;
+    std::vector<std::vector<juce::Component*>> param_to_component;
     
     juce::ValueTree preset_tree;
 
