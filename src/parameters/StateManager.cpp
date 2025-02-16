@@ -11,6 +11,7 @@ StateManager::StateManager(PluginProcessor* proc) :
     ), 
     PRESET_EXTENSION("." + juce::String(JucePlugin_Name).toLowerCase())
 {
+    param_to_component.resize(TOTAL_NUMBER_PARAMETERS);
     //==============================================================================
     //-> ADD PARAMS/PROPERTIES
     //==============================================================================
@@ -297,4 +298,17 @@ void StateManager::parameterChanged(const juce::String &parameterID, float newVa
     any_parameter_changed.store(true);
     parameter_modified_flags[parameterID].store(true);
     juce::ignoreUnused(newValue);
+}
+
+void StateManager::register_component(size_t id, juce::Component *component) {
+    if (id <= param_to_component.size()) {
+        param_to_component[id].push_back(component);
+    }
+}
+
+void StateManager::unregister_component(size_t id, juce::Component* component) {
+    if (id < param_to_component.size()) {
+        auto& vec = param_to_component[id];
+        vec.erase(std::remove(vec.begin(), vec.end(), component), vec.end());
+    }
 }

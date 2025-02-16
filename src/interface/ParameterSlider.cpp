@@ -13,9 +13,13 @@ ParameterSlider::ParameterSlider(StateManager *s, size_t p_id)
         ColourIds::sliderColourId,
         juce::Colour(
             0xff000000)); // to change the colour of the slider, set colour id 1
+    state->register_component(param_id, this);
 }
 
-ParameterSlider::~ParameterSlider() {}
+ParameterSlider::~ParameterSlider()
+{
+    state->unregister_component(param_id, this);
+}
 
 void ParameterSlider::paint(juce::Graphics &g)
 {
