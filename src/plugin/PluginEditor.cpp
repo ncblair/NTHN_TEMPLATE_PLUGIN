@@ -56,12 +56,11 @@ void AudioPluginAudioProcessorEditor::resized()
 void AudioPluginAudioProcessorEditor::timerCallback()
 {
     // repaint UI and note that we have updated ui, if parameter values have changed
-    for (size_t i{0}; i < TOTAL_NUMBER_PARAMETERS; ++i)
+    for (size_t param_id{0}; param_id < TOTAL_NUMBER_PARAMETERS; ++param_id)
     {
-        if (state->get_parameter_modified(i))
+        if (state->get_parameter_modified(param_id))
         {
-            std::vector<juce::Component *> &components = state->get_components(i);
-            for (juce::Component *component : components)
+            for (juce::Component *component : state->get_components(param_id))
                 component->repaint();
         }
     }
