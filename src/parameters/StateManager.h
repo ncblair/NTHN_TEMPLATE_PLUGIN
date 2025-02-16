@@ -15,20 +15,21 @@ StateManager manages Parameters, Properties, Presets
   -> In other words, StateManager manages the plugin state.
 
   properties are non-automatable parameters
-  properties are stored in the property tree which is a ValueTree 
+  properties are stored in the property tree which is a ValueTree
   parameters are stored in the parameter tree which is an APVTS attached to the PluginProcessor
 
   -> outside of StateManager, you interact with properties and parameters as pretty much equivalent
       that is: you can get the param_value() of either a property or a parameter
-      however, properties will not be exposed to the host 
+      however, properties will not be exposed to the host
       and you have to be careful to note that the APVTS is not the same type as ValueTree
 
   presets are stored in the preset tree which is a ValueTree with a property PRESET_NAME_ID
 */
 
-class StateManager : public juce::ValueTree::Listener, public juce::AudioProcessorValueTreeState::Listener {
-  public:
-    StateManager(PluginProcessor* proc);
+class StateManager : public juce::ValueTree::Listener, public juce::AudioProcessorValueTreeState::Listener
+{
+public:
+    StateManager(PluginProcessor *proc);
     ~StateManager() override;
 
     //--------------------------------------------------------------------------------
@@ -46,10 +47,10 @@ class StateManager : public juce::ValueTree::Listener, public juce::AudioProcess
     // You can also use these methods from the UI thread to access parameters
     // These methods are not necessarily realtime safe, so don't call from audio thread
     // And don't call these from apvts listeners (which might be invoked on audio thread)
-    
+
     // an example might be setting parameters from a custom knob or button component
     //--------------------------------------------------------------------------------
-    juce::RangedAudioParameter* get_parameter(size_t param_id);
+    juce::RangedAudioParameter *get_parameter(size_t param_id);
     void begin_change_gesture(size_t param_id);
     void end_change_gesture(size_t param_id);
     void set_parameter(size_t param_id, float value);
@@ -65,41 +66,39 @@ class StateManager : public juce::ValueTree::Listener, public juce::AudioProcess
     // Use these methods to get ValueTrees for use in a UI component – say a preset browser
     // or use get_state() if you want the whole state of the plugin – say for saving to disk
     //--------------------------------------------------------------------------------
-    juce::AudioProcessorValueTreeState* get_param_tree();
+    juce::AudioProcessorValueTreeState *get_param_tree();
     juce::ValueTree get_property_tree();
     juce::ValueTree get_preset_tree();
     juce::ValueTree get_state();
-    
+
     //--------------------------------------------------------------------------------
     // Saving and Loading Presets, called from UI thread
     // preset_modified is true when any parameter has been changed, after loading a preset
     //--------------------------------------------------------------------------------
     void save_preset(juce::String preset_name);
     void load_preset(juce::String preset_name);
-    void load_from(juce::XmlElement* xml);
+    void load_from(juce::XmlElement *xml);
     void set_preset_name(juce::String preset_name);
     juce::String get_preset_name();
     void update_preset_modified();
-    bool get_parameter_modified(size_t param_id, bool exchange_value=false);
-
-
+    bool get_parameter_modified(size_t param_id, bool exchange_value = false);
 
     //--------------------------------------------------------------------------------
     // a single UndoManager is shared by all ValueTrees
     //--------------------------------------------------------------------------------
-    juce::UndoManager* get_undo_manager();
+    juce::UndoManager *get_undo_manager();
 
     //--------------------------------------------------------------------------------
     // value tree listener callbacks – so we can mark when the state has changed
     //--------------------------------------------------------------------------------
     void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged, const juce::Identifier &property) override;
-    void parameterChanged (const juce::String &parameterID, float newValue) override;
+    void parameterChanged(const juce::String &parameterID, float newValue) override;
 
     //--------------------------------------------------------------------------------
     // const identifiers used for accessing ValueTrees
     // You might be able to make these private, depends on your implementation
     // One reason they should be public: if you copy a valueTree to a separate component
-    //    and you want to get the children of that tree by identifier 
+    //    and you want to get the children of that tree by identifier
     //        (but don't want to copy a bunch of strings around)
     //--------------------------------------------------------------------------------
     static inline const juce::Identifier PARAMETERS_ID{"PARAMETERS"};
@@ -124,21 +123,31 @@ class StateManager : public juce::ValueTree::Listener, public juce::AudioProcess
     std::atomic<bool> any_parameter_changed{false};
     std::atomic<bool> preset_modified{true};
 
-  private:
+    //--------------------------------------------------------------------------------
+    // each component registers itself with the state manager
+    // allowing the PluginEditor to loop over each component registerd with the state manager and call repaint()
+    // if the value of the underlying parameter has changed
+    //--------------------------------------------------------------------------------
+    void register_component(size_t id, juce::Component *component);
+    void unregister_component(size_t id, juce::Component *component);
+    std::vector<juce::Component *> &get_components(size_t id) { return param_to_component[id]; }
+
+private:
     // state
     juce::ValueTree state_tree;
     std::unique_ptr<juce::AudioProcessorValueTreeState> param_tree_ptr;
     juce::ValueTree property_tree;
     std::unordered_map<juce::String, std::atomic<float>> property_atomics;
     std::unordered_map<juce::String, std::atomic<bool>> parameter_modified_flags;
-    
+    std::vector<juce::Component *> param_to_component[TOTAL_NUMBER_PARAMETERS] = {};
+
     juce::ValueTree preset_tree;
 
-    //random number generator for randomizing parameters
+    // random number generator for randomizing parameters
     juce::Random rng;
 
     // Undo Manager
     juce::UndoManager undo_manager;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StateManager)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StateManager)
 };
