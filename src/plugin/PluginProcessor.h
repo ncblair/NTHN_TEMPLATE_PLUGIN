@@ -10,29 +10,28 @@ class Gain;
 #include "PluginProcessorBase.h"
 
 //==============================================================================
-class PluginProcessor  : public PluginProcessorBase
+class PluginProcessor : public PluginProcessorBase
 {
 public:
     //==============================================================================
     PluginProcessor();
     ~PluginProcessor() override;
     //==============================================================================
-    void prepareToPlay (double sampleRate, int samplesPerBlock) override;
-    void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+    void prepareToPlay(double sampleRate, int samplesPerBlock) override;
+    void processBlock(juce::AudioBuffer<float> &, juce::MidiBuffer &) override;
     //==============================================================================
-    void getStateInformation (juce::MemoryBlock& destData) override;
-    void setStateInformation (const void* data, int sizeInBytes) override;
+    void getStateInformation(juce::MemoryBlock &destData) override;
+    void setStateInformation(const void *data, int sizeInBytes) override;
     //==============================================================================
-    juce::AudioProcessorEditor* createEditor() override;
+    juce::AudioProcessorEditor *createEditor() override;
     //==============================================================================
     // state
     //==============================================================================
     std::unique_ptr<StateManager> state;
 
-  private:
-
+private:
     std::unique_ptr<Gain> gain;
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
 };

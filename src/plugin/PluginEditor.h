@@ -22,20 +22,19 @@ class ParameterSlider;
 // parameter listeners CAN get called by the host from the audio thread, which leads
 // to issues with thread safety and realtime safety
 //==============================================================================
-class AudioPluginAudioProcessorEditor  : public juce::AudioProcessorEditor, public juce::Timer
+class AudioPluginAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::Timer
 {
 public:
-    explicit AudioPluginAudioProcessorEditor (PluginProcessor&);
+    explicit AudioPluginAudioProcessorEditor(PluginProcessor &);
     ~AudioPluginAudioProcessorEditor() override;
 
     //==============================================================================
-    void paint (juce::Graphics&) override;
-    
+    void paint(juce::Graphics &) override;
+
     void resized() override;
     void timerCallback() override;
 
 private:
-    
     const size_t TIMER_HZ = 60;
     const size_t UNDO_HZ = 1;
     const int W = 900; // width
@@ -43,11 +42,11 @@ private:
     unsigned int timer_counter{0};
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
-    PluginProcessor& processorRef;
+    PluginProcessor &processorRef;
 
-    // a convenient pointer to the state manager 
+    // a convenient pointer to the state manager
     // which is owned by the processor
-    StateManager* state;
+    StateManager *state;
 
     // A single slider
     std::unique_ptr<ParameterSlider> gain_slider;
@@ -56,8 +55,7 @@ private:
     // UNDO REDO
     // to use, attach buttons to state->undo() / state->redo()
     //==============================================================================
-    juce::UndoManager* undo_manager;
-    
+    juce::UndoManager *undo_manager;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessorEditor)
 };
