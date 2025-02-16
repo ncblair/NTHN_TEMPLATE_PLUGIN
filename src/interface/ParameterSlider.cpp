@@ -2,11 +2,9 @@
 #include "../parameters/StateManager.h"
 
 ParameterSlider::ParameterSlider(StateManager *s, size_t p_id)
-    : juce::SettableTooltipClient(), juce::Component(), param_id(p_id + 1),
+    : juce::SettableTooltipClient(), juce::Component(),
       state(s)
 {
-    // param_id is initialized to p_id + 1 so that update_param_id runs on the
-    // first call
     update_param_id(p_id);
     setOpaque(true);
     setColour(
@@ -47,9 +45,6 @@ void ParameterSlider::paint(juce::Graphics &g)
 
 void ParameterSlider::update_param_id(size_t p_id)
 {
-    if (param_id == p_id)
-        return;
-
     param_id = p_id;
     setTooltip(PARAMETER_TOOLTIPS[param_id]);
     setName(PARAMETER_NICKNAMES[param_id]);
