@@ -29,7 +29,18 @@ public:
     //==============================================================================
     std::unique_ptr<StateManager> state;
 
+    //==============================================================================
+    float tau2pole(float tau, float sr);
+
+    void prepareSmoothedVariables();
+
 private:
+
+    bool isPrepared = false;
+
+    float smoothPole;
+    float smoothedGain;
+
     std::unique_ptr<Gain> gain;
 
     //==============================================================================
