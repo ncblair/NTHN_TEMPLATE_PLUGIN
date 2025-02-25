@@ -29,7 +29,16 @@ public:
     //==============================================================================
     std::unique_ptr<StateManager> state;
 
+    //==============================================================================
+    void prepareSmoothedVariables();
+
 private:
+
+    bool isPrepared = false;
+
+    float smoothPole;
+    float smoothedGain;
+
     std::unique_ptr<Gain> gain;
 
     //==============================================================================
