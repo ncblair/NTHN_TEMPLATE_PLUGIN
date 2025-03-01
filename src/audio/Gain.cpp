@@ -1,5 +1,5 @@
 #include "Gain.h"
-#include "../Util/Utils.h"
+#include "../Util/Util.h"
 
 Gain::Gain(float sample_rate, int, int, float default_gain_)
     : smooth_pole(nthn_utils::tau2pole(0.05f, sample_rate)), default_gain(default_gain_)
