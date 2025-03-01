@@ -65,7 +65,7 @@ On MacOS, open `build.sh` in a text editor. Set the plugin name and build mode a
 
 Then, run the build script
 ```sh
-./build.sh
+./build.sh # (-m Release/Debug/...)
 ```
 
 On Windows, run the following code:
@@ -83,7 +83,17 @@ If compiling was successful, you should already be able to run the plugin in you
 
 To run the plugin as a standalone application, run the file found in  *build/EXAMPLE_artefacts/Debug/Standalone/EXAMPLE.app*
 
-By default, you should see a green background with a single slider that modulates the gain of the incoming signal. 
+By default, you should see a green background with a single slider that modulates the gain of the incoming signal.
+
+## Editing the Plugin Name, Metadata and Build Options
+
+If you're using the build script, change the plugin name at the top of the build script, `build.sh`
+
+Then in `CMakeLists.txt`, fill out the plugin name and information at the top of the file. 
+
+Read through `CMakeLists.txt`...If you need to add images to your plugin, change the plugin to from an audio effect to a synthesizer, or mess with other JUCE settings, you will do it here. 
+
+Finally, if you are going to use the notarization script, `notarize.sh`, change the plugin information at the top of the script. 
 
 ## Editing Plugin Parameters in the Template Plugin
 
@@ -128,6 +138,9 @@ It's inconvenient to type this code every time you want to add a new plugin para
 PARAMETER | MIN | MAX | GRAIN | EXP | DEFAULT | AUTOMATABLE | NAME | SUFFIX | TOOLTIP | TO_STRING_ARR
 --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---
 GAIN | -60 | 6 | 0 | 1 | 0 | 1 | Gain | db | The gain in decibels |
+MODE | 0 | 3 | 1 | 1 | 0 | 1 | Mode | | Change effect mode | "A" "B" "C" "D"
+
+For parameters that are combo-box drop downs or toggles, you can use the TO_STRING_ARR to input a list of string options, as shown above
 
 To convert between table data and JUCE parameters, a pre-build python script reads the `parameters.csv` file and generates C++ code that the StateManager class can use to create plugin parameters. This code is exported to the file `parameters/ParameterDefines.h` as a number of arrays of useful parameter information which can be accessed by the rest of the codebase. Any code that imports `parameters/StateManager.h` will also have access to the definitions in `ParameterDefines.h`. The following code shows how to access various attributes of a parameter from within the codebase, using the `PARAM` enum:
 
