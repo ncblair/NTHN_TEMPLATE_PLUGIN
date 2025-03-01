@@ -12,7 +12,7 @@ Install Homebrew: https://brew.sh:
 
 In terminal, install xcode command line tools
 Install git and cmake
-```
+```sh
 xcode-select --install
 brew update
 brew install git cmake 
@@ -25,7 +25,7 @@ Install Chocolatey: https://chocolatey.org:
 
 In Command Prompt or Powershell (Run as Administrator)
 install git and cmake:
-```
+```sh
 choco install -y git cmake 
 # optionally, for faster builds
 choco install -y ninja
