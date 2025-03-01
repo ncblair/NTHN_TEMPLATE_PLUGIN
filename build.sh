@@ -5,10 +5,6 @@ python src/parameters/create_parameters.py
 PLUGIN_NAME="EXAMPLE"
 MODE="RelWithDebInfo"
 
-if ! [ -d "build" ]; then
-  `mkdir -p build`
-fi
-
 # "./build.sh -m Debug", for example
 while getopts "m:" flag
 do
@@ -23,33 +19,64 @@ done
 
 ARCH=$(uname -m)
 
+# Determine the best available CMake generator
+
+if command -v ninja &> /dev/null; then
+    GENERATOR="-G Ninja"
+    USE_NINJA=true
+else
+    GENERATOR=""  # Use CMake's default generator
+    USE_NINJA=false
+fi
+
+MAIN_DIR=$(pwd)
+BUILD_DIR="${MAIN_DIR}/build/${MODE}"
+
+# Get the number of CPU cores
+OS="$(uname)"
+if [[ "$OS" == "Darwin" ]]; then
+    CORES=$(sysctl -n hw.ncpu)  # macOS
+elif [[ "$OS" == "Linux" ]] || [[ "$OS" == "CYGWIN"* ]] || [[ "$OS" == "MINGW"* ]]; then
+    CORES=$(nproc)  # Linux, WSL, Git Bash, Cygwin, MinGW
+else
+    CORES=8  # Default to 8 if unknown OS (failsafe)
+fi
+
 echo "=================
 PLUGIN: ${PLUGIN_NAME}
 MODE: ${MODE}
 ARCHITECTURE: ${ARCH}
+GENERATOR: ${GENERATOR}
+CORES: ${CORES}
 ================"
+START_TIME=$(date +%s.%N)
 
-cd build
-if [ $ARCH = 'x86_64' ]; then
-  cmake -DCMAKE_OSX_ARCHITECTURES="x86_64" -DCMAKE_BUILD_TYPE="$MODE" ..
-elif [ $ARCH = 'arm64' ]; then
-  cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_BUILD_TYPE="$MODE" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 ..
+# Only run if no build folder or new CMake configuration
+if [ ! -d "${BUILD_DIR}/CMakeFiles" ]; then
+    mkdir -p "$BUILD_DIR"
+    cd "$BUILD_DIR"
+
+    if [ $ARCH = 'x86_64' ]; then
+        cmake $GENERATOR -DCMAKE_OSX_ARCHITECTURES="x86_64" -DCMAKE_BUILD_TYPE="$MODE" -DCMAKE_CXX_FLAGS="-fcolor-diagnostics" "$MAIN_DIR"
+    elif [ $ARCH = 'arm64' ]; then
+        cmake $GENERATOR -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_BUILD_TYPE="$MODE" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DCMAKE_CXX_FLAGS="-fcolor-diagnostics" "$MAIN_DIR"
+    fi
+    cd "$MAIN_DIR"
 fi
 
-cd ..
-cmake --build build -j8 --config ${MODE}
+# use max cores for default generator (ninja ignores this)
+cmake --build "$BUILD_DIR" -j"$CORES" --config "$MODE"
+
+
+END_TIME=$(date +%s.%N)
+TIME_ELAPSED=$(echo "$END_TIME - $START_TIME" | bc)
 
 result=$?
 
 if [ ${result} == 0 ]; then
 
   say "Build successful"
-
-  # CHANGE THIS LINE TO OPEN A ... DAW, or a debugger if you want
-
-  # build/"$PLUGIN_NAME"_artefacts/"$MODE"/Standalone/"$PLUGIN_NAME".app/Contents/MacOS/"$PLUGIN_NAME"
-  # lldb /Applications/REAPER.app/Contents/MacOS/REAPER peripheral/Test.rpp
-  # /Applications/Ableton\ Live\ 11\ Suite.app/Contents/MacOS/Live peripheral/Test\ Project/Test.als
+  echo "Elapsed time: ${TIME_ELAPSED} seconds"
 
 else
   say "Build failed"
