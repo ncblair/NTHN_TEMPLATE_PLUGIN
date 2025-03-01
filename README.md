@@ -10,8 +10,7 @@ MacOS:
 
 Install Homebrew: https://brew.sh:
 
-In terminal, install xcode command line tools
-Install git and cmake
+In terminal, install xcode command line tools, git and cmake
 ```sh
 xcode-select --install
 brew update
