@@ -14,7 +14,6 @@ class ParameterSlider;
 // I also have it inherit from juce's Timer class
 // This enables polling: https://en.wikipedia.org/wiki/Polling_(computer_science)
 // I use polling for:
-//      • Undo/Redo functionality
 //      • Updating the UI when parameter changes come from the host
 //
 // The other option is to use listeners, which have the advantage of being more efficient
@@ -36,7 +35,6 @@ public:
 
 private:
     const size_t TIMER_HZ = 60;
-    const size_t UNDO_HZ = 1;
     const int W = 900; // width
     const int H = 500; // height
     unsigned int timer_counter{0};
@@ -50,12 +48,6 @@ private:
 
     // A single slider
     std::unique_ptr<ParameterSlider> gain_slider;
-
-    //==============================================================================
-    // UNDO REDO
-    // to use, attach buttons to state->undo() / state->redo()
-    //==============================================================================
-    juce::UndoManager *undo_manager;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessorEditor)
 };
