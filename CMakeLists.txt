@@ -33,6 +33,32 @@ endif()
 
 project($ENV{PLUGIN_NAME} VERSION $ENV{VERSION_STRING})
 
+
+# --------------------------------------------------------------------------------
+# NTHN Template Pre Build Step: Generate src/parameters/ParameterDefines.h
+# --------------------------------------------------------------------------------
+set(ENV{PARAMETERS_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src/parameters)
+
+# Add the executable to generate ParameterDefines.h.
+add_executable(create_parameters_exe $ENV{PARAMETERS_DIR}/create_parameters.cpp)
+set_target_properties(create_parameters_exe PROPERTIES 
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED YES
+)
+
+# Create a custom command to run the executable.
+add_custom_command(
+    OUTPUT $ENV{PARAMETERS_DIR}/ParameterDefines.h
+    COMMAND $<TARGET_FILE:create_parameters_exe>
+    WORKING_DIRECTORY $ENV{PARAMETERS_DIR}
+    DEPENDS $ENV{PARAMETERS_DIR}/parameters.csv $ENV{PARAMETERS_DIR}/create_parameters.cpp
+    COMMENT "Generating ParameterDefines.h from parameters.csv"
+)
+
+# Define a custom target that depends on the generated header.
+add_custom_target(GenerateParameters DEPENDS $ENV{PARAMETERS_DIR}/ParameterDefines.h)
+
 #--------------------------------------------------------------------------------
 # Include JUCE (as a subdirectory)
 # It is recommended to have a separate JUCE subdirectory for every project you create. 
@@ -75,13 +101,15 @@ juce_add_plugin($ENV{PLUGIN_NAME}
     FORMATS AU VST3 Standalone                  # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
     PRODUCT_NAME $ENV{PLUGIN_NAME})        # The name of the final executable, which can differ from the target name
 
-#--------------------------------------------------------------------------------
-# `juce_generate_juce_header` will create a JuceHeader.h for a given target, which will be generated
-# into your build tree. This should be included with `#include <JuceHeader.h>`. The include path for
-# this header will be automatically added to the target. The main function of the JuceHeader is to
-# include all your JUCE module headers; if you're happy to include module headers directly, you
-# probably don't need to call this.
-#--------------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------------
+# Make sure to generate parameters file before building target
+# --------------------------------------------------------------------------------
+add_dependencies($ENV{PLUGIN_NAME} GenerateParameters)
+
+# --------------------------------------------------------------------------------
+# Instead of JUCE generate Header call here, manually configure ProjectInfo.cpp with relevant info
+# --------------------------------------------------------------------------------
 
 # juce_generate_juce_header($ENV{PLUGIN_NAME})
 set(VERSION_NUMBER $ENV{VERSION_NUMBER})
