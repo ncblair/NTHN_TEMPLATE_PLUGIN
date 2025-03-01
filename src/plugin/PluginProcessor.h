@@ -34,7 +34,7 @@ public:
 private:
     std::unique_ptr<Gain> gain;
 
-    std::atomic<bool> needsToSnapSmoothedParameters{true};
+    std::atomic<bool> should_snap_smoothed_params{true};
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
