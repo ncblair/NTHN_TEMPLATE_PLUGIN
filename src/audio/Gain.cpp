@@ -1,25 +1,37 @@
 #include "Gain.h"
+#include "../Util/Util.h"
 
-Gain::Gain(float sample_rate, int samples_per_block, int num_channels, float init_gain) {
-    gain = init_gain;
-    requested_gain = init_gain;
-    // set iir filter s.t. we sample once per block and the filter cutoff is 1000hz
-    iir_gamma = 1.0f - std::exp(-2.0f * juce::MathConstants<float>::pi * 1000.0f * samples_per_block / sample_rate);
-    output_channels = num_channels;
+Gain::Gain(float sample_rate, int, int, float default_gain_)
+    : smooth_pole(nthn_utils::tau2pole(0.05f, sample_rate)), default_gain(default_gain_)
+{
+    setState(default_gain);
 }
 
-Gain::~Gain() {
-
+Gain::~Gain()
+{
 }
 
-void Gain::process(juce::AudioBuffer<float>& buffer) {
-    float target_gain = gain * (1.0f - iir_gamma) + requested_gain * iir_gamma;
-    if (std::abs(target_gain - requested_gain) < 0.001f) 
-        target_gain = requested_gain;
-    buffer.applyGainRamp(0, buffer.getNumSamples(), gain, target_gain);
-    gain = target_gain;
+void Gain::process(float *const *buffer, const int numSamples, const int numChannels, const float gain)
+{
+    // get variable smooth_gain in a register
+    float local_gain = smooth_gain;
+    for (int i = 0; i < numSamples; ++i)
+    {
+        // smooth gain to next value using IIR
+        local_gain = nthn_utils::lerp(gain, local_gain, smooth_pole);
+
+        // apply gain
+        for (int c = 0; c < numChannels; ++c)
+        {
+            buffer[c][i] *= local_gain;
+        }
+    }
+    // store smooth gain state variable in object
+    smooth_gain = local_gain;
 }
 
-void Gain::setGain(float requested_gain_) {
-    requested_gain = requested_gain_;
+void Gain::setState(const float gain)
+{
+    // force update, no smoothing applied
+    smooth_gain = gain;
 }
