@@ -18,6 +18,13 @@ set(ENV{PLUGIN_CODE} Plid) # A unique four-character plugin id with exactly one 
 
 cmake_minimum_required(VERSION 3.15)
 
+# --------------------------------------------------------------------------------
+# Add Interprocedural Optimization in Release Mode
+# --------------------------------------------------------------------------------
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
+
 #--------------------------------------------------------------------------------
 # The top-level CMakeLists.txt file for a project must contain a literal, direct call to the
 # `project()` command. `project()` sets up some helpful variables that describe source/binary

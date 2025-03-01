@@ -4,6 +4,34 @@ The Template Plugin is a starting point for new JUCE plugin projects that emphas
 
 ![](ignore/cover.svg)
 
+## Installing Dependencies
+
+MacOS:
+
+Install Homebrew: https://brew.sh:
+
+In terminal, install xcode command line tools, git and cmake
+```sh
+xcode-select --install
+brew update
+brew install git cmake 
+# optionally, for faster builds
+brew install ninja
+```
+
+Windows:
+Install Chocolatey: https://chocolatey.org:
+
+In Command Prompt or Powershell (Run as Administrator)
+install git and cmake:
+```sh
+choco install -y git cmake 
+# optionally, for faster builds
+choco install -y ninja
+```
+
+For a windows terminal, I recommend Git Bash
+
 ## Downloading the Template
 
 To download The Template Plugin, clone the repository from GitHub. Update submodules to get a copy of the JUCE library in the same folder.
