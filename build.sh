@@ -49,7 +49,7 @@ ARCHITECTURE: ${ARCH}
 GENERATOR: ${GENERATOR}
 CORES: ${CORES}
 ================"
-START_TIME=$(date +%s.%N)
+START_TIME=$(date +%s)
 
 # Only run if no build folder or new CMake configuration
 if [ ! -d "${BUILD_DIR}/CMakeFiles" ]; then
@@ -68,13 +68,12 @@ fi
 cmake --build "$BUILD_DIR" -j"$CORES" --config "$MODE"
 
 
-END_TIME=$(date +%s.%N)
+END_TIME=$(date +%s)
 TIME_ELAPSED=$(echo "$END_TIME - $START_TIME" | bc)
 
 result=$?
 
-if [ ${result} == 0 ]; then
-
+if [ ${result} = 0 ]; then
   say "Build successful"
   echo "Elapsed time: ${TIME_ELAPSED} seconds"
 
