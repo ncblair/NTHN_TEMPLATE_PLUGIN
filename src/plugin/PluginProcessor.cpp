@@ -24,7 +24,7 @@ void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     // variables that depend on sample rate or block size
 
     gain = std::make_unique<Gain>(float(sampleRate), samplesPerBlock, getTotalNumOutputChannels(), PARAMETER_DEFAULTS[PARAM::GAIN] / 100.0f);
-    needsToSnapSmoothedParameters.store(true);
+    should_snap_smoothed_params.store(true);
 }
 
 void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
@@ -50,7 +50,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
     // i.e. there should be no startup time for the plugin parameters to load at the beginning of a render
     // this should also get called when the plugin needs to clear tails, in reset()
     //----
-    if (needsToSnapSmoothedParameters.exchange(false))
+    if (should_snap_smoothed_params.exchange(false))
     {
         // force state, to end any internal smoothing
         gain->setState(state->param_value(PARAM::GAIN) / 100.0f);
@@ -75,7 +75,7 @@ void PluginProcessor::reset()
     // called to clear any "tails" and make sure the plugin is ready to process.
 
     // cutoff smooth here – smoothed params are kinda like tails
-    needsToSnapSmoothedParameters.store(true);
+    should_snap_smoothed_params.store(true);
 }
 
 //==============================================================================
@@ -101,7 +101,7 @@ void PluginProcessor::setStateInformation(const void *data, int sizeInBytes)
     state->load_from(xmlState.get());
 
     // this is like a plugin state starting point. no need to smooth to it
-    needsToSnapSmoothedParameters.store(true);
+    should_snap_smoothed_params.store(true);
 }
 
 juce::AudioProcessorEditor *PluginProcessor::createEditor()
