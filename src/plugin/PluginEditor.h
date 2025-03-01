@@ -21,7 +21,7 @@ class ParameterSlider;
 // parameter listeners CAN get called by the host from the audio thread, which leads
 // to issues with thread safety and realtime safety
 //==============================================================================
-class AudioPluginAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::Timer
+class AudioPluginAudioProcessorEditor : public juce::AudioProcessorEditor
 {
 public:
     explicit AudioPluginAudioProcessorEditor(PluginProcessor &);
@@ -31,13 +31,12 @@ public:
     void paint(juce::Graphics &) override;
 
     void resized() override;
-    void timerCallback() override;
 
 private:
-    const size_t TIMER_HZ = 60;
+    void windowReadyToPaint();
+
     const int W = 900; // width
     const int H = 500; // height
-    unsigned int timer_counter{0};
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     PluginProcessor &processorRef;
@@ -48,6 +47,9 @@ private:
 
     // A single slider
     std::unique_ptr<ParameterSlider> gain_slider;
+
+    // VBlank Attachment for handling state before repainting
+    std::unique_ptr<juce::VBlankAttachment> repaint_callback_handler;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessorEditor)
 };
