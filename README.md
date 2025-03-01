@@ -65,7 +65,7 @@ On MacOS, open `build.sh` in a text editor. Set the plugin name and build mode a
 
 Then, run the build script
 ```sh
-./build.sh
+./build.sh # (-m Release/Debug/...)
 ```
 
 On Windows, run the following code:
@@ -83,7 +83,17 @@ If compiling was successful, you should already be able to run the plugin in you
 
 To run the plugin as a standalone application, run the file found in  *build/EXAMPLE_artefacts/Debug/Standalone/EXAMPLE.app*
 
-By default, you should see a green background with a single slider that modulates the gain of the incoming signal. 
+By default, you should see a green background with a single slider that modulates the gain of the incoming signal.
+
+## Editing the Plugin Name, Metadata and Build Options
+
+If you're using the build script, change the plugin name at the top of the build script, `build.sh`
+
+Then in `CMakeLists.txt`, fill out the plugin name and information at the top of the file. 
+
+Read through `CMakeLists.txt`...If you need to add images to your plugin, change the plugin to from an audio effect to a synthesizer, or mess with other JUCE settings, you will do it here. 
+
+Finally, if you are going to use the notarization script, `notarize.sh`, change the plugin information at the top of the script. 
 
 ## Editing Plugin Parameters in the Template Plugin
 
