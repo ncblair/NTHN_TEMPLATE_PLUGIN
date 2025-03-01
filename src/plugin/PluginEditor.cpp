@@ -25,7 +25,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(PluginProcessor
     getConstrainer()->setFixedAspectRatio(float(W) / float(H));
 
     // VBlank attachment / Timer
-    repaint_callback_handler = std::make_unique<juce::VBlankAttachment>(this, [this](double time)
+    repaint_callback_handler = std::make_unique<juce::VBlankAttachment>(this, [this](double)
                                                                         { windowReadyToPaint(); });
 }
 

@@ -4,7 +4,6 @@
 #include "PluginEditor.h"
 #include "../parameters/StateManager.h"
 #include "../audio/Gain.h"
-#include "Utils.h"
 
 //==============================================================================
 PluginProcessor::PluginProcessor()
@@ -18,29 +17,24 @@ PluginProcessor::~PluginProcessor()
 }
 
 //==============================================================================
-void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
     // Called after the constructor, but before playback starts
     // Use this to allocate up any resources you need, and to reset any
     // variables that depend on sample rate or block size
 
-    // Flags to indicate that the plugin is prepared in case setStateInformation is called before prepareToPlay
-    isPrepared = true;
-
-    // Set up the smoothing pole for desired smoothing time
-    float tau = 0.050f; // 50ms smoothing time
-    smoothPole = Utils::tau2pole(tau, sampleRate);
-
-    // Update the smoothed variables
-    prepareSmoothedVariables();
-
     gain = std::make_unique<Gain>(float(sampleRate), samplesPerBlock, getTotalNumOutputChannels(), PARAMETER_DEFAULTS[PARAM::GAIN] / 100.0f);
 }
 
-void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
-                                              juce::MidiBuffer& midiMessages)
+void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
+                                   juce::MidiBuffer &midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
+
+    // get audio buffer references outside of JUCE, so we can pass to non-juce processors
+    float *const *bufferPtrs = buffer.getArrayOfWritePointers();
+    const int numSamples = buffer.getNumSamples();
+    const int numChannels = buffer.getNumChannels();
 
     //--------------------------------------------------------------------------------
     // read in some parameter values here, if you want
@@ -49,18 +43,26 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     //--------------------------------------------------------------------------------
     auto requested_gain = state->param_value(PARAM::GAIN) / 100.0f;
 
-    // Apply smoothing to incoming parameter changes
-    smoothedGain = Utils::lerp(smoothedGain, requested_gain, smoothPole);
+    //--------
+    // Tell all of our processors to force their parameters to update
+    // This should get run any time the host sets state from setStateInformation
+    // i.e. there should be no startup time for the plugin parameters to load at the beginning of a render
+    // this should also get called when the plugin needs to clear tails, in reset()
+    //----
+    if (needsToSnapSmoothedParameters.exchange(false))
+    {
+        // force state, to end any internal smoothing
+        if (gain)
+            gain->setState(state->param_value(PARAM::GAIN) / 100.0f);
+    }
 
     //--------------------------------------------------------------------------------
-    // process samples below. use the buffer argument that is passed in.
+    // process samples below.
     // for an audio effect, buffer is filled with input samples, and you should fill it with output samples
     // for a synth, buffer is filled with zeros, and you should fill it with output samples
     // see: https://docs.juce.com/master/classAudioBuffer.html
     //--------------------------------------------------------------------------------
-
-    gain->setGain(smoothedGain);
-    gain->process(buffer);
+    gain->process(bufferPtrs, numSamples, numChannels, requested_gain);
     //--------------------------------------------------------------------------------
     // you can use midiMessages to read midi if you need.
     // since we are not using midi yet, we clear the buffer.
@@ -68,8 +70,14 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     midiMessages.clear();
 }
 
+void PluginProcessor::reset()
+{
+    // called to clear any "tails" and make sure the plugin is ready to process.
+    needsToSnapSmoothedParameters.store(true);
+}
+
 //==============================================================================
-void PluginProcessor::getStateInformation (juce::MemoryBlock& destData)
+void PluginProcessor::getStateInformation(juce::MemoryBlock &destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
@@ -77,40 +85,31 @@ void PluginProcessor::getStateInformation (juce::MemoryBlock& destData)
 
     // We will just store our parameter state, for now
     auto plugin_state = state->get_state();
-    std::unique_ptr<juce::XmlElement> xml (plugin_state.createXml());
-    copyXmlToBinary (*xml, destData);
+    std::unique_ptr<juce::XmlElement> xml(plugin_state.createXml());
+    copyXmlToBinary(*xml, destData);
 }
 
-void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
+void PluginProcessor::setStateInformation(const void *data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 
     // Restore our parameters from file
-    std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
+    std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
     state->load_from(xmlState.get());
 
-    // Update the smoothed variables if prepareToPlay hasn't been called
-    if (!isPrepared)
-    {
-        prepareSmoothedVariables();
-    }
+    // we have entirely new parameters ready, so set parameters immediately, don't smooth
+    needsToSnapSmoothedParameters.store(true);
 }
 
-void PluginProcessor::prepareSmoothedVariables()
+juce::AudioProcessorEditor *PluginProcessor::createEditor()
 {
-    // Function to update the smoothed variables both in prepareToPlay and setStateInformation
-    smoothedGain = juce::jlimit(0.0f, 100.0f, state->param_value(GAIN));
-}
-
-juce::AudioProcessorEditor* PluginProcessor::createEditor()
-{
-    return new AudioPluginAudioProcessorEditor (*this);
+    return new AudioPluginAudioProcessorEditor(*this);
 }
 
 //==============================================================================
 // This creates new instances of the plugin..
-juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
+juce::AudioProcessor *JUCE_CALLTYPE createPluginFilter()
 {
     return new PluginProcessor();
 }
