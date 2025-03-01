@@ -9,7 +9,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(PluginProcessor
     : AudioProcessorEditor(&p), processorRef(p)
 {
     state = processorRef.state.get();
-    startTimerHz(int(TIMER_HZ));
 
     // add slider BEFORE setting size
     gain_slider = std::make_unique<ParameterSlider>(state, PARAM::GAIN);
@@ -24,6 +23,10 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(PluginProcessor
     setResizable(true, true);
     setResizeLimits((W * 4) / 5, (H * 4) / 5, (W * 3) / 2, (H * 3) / 2);
     getConstrainer()->setFixedAspectRatio(float(W) / float(H));
+
+    // VBlank attachment / Timer
+    repaint_callback_handler = std::make_unique<juce::VBlankAttachment>(this, [this](double time)
+                                                                        { windowReadyToPaint(); });
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -50,7 +53,7 @@ void AudioPluginAudioProcessorEditor::resized()
     gain_slider->setBounds(slider_x, slider_y, slider_size, slider_size);
 }
 
-void AudioPluginAudioProcessorEditor::timerCallback()
+void AudioPluginAudioProcessorEditor::windowReadyToPaint()
 {
     // repaint UI and note that we have updated ui, if parameter values have changed
     for (size_t param_id{0}; param_id < TOTAL_NUMBER_PARAMETERS; ++param_id)
@@ -63,5 +66,4 @@ void AudioPluginAudioProcessorEditor::timerCallback()
     }
 
     state->update_preset_modified();
-    timer_counter++;
 }
