@@ -216,6 +216,16 @@ bool StateManager::get_parameter_modified(size_t param_id, bool exchange_value)
     return parameter_modified_flags[PARAMETER_NAMES[param_id]].exchange(exchange_value);
 }
 
+void StateManager::undo()
+{
+    undo_manager.undo();
+}
+
+void StateManager::redo()
+{
+    undo_manager.redo();
+}
+
 juce::RangedAudioParameter *StateManager::get_parameter(size_t param_id)
 {
     if (PARAMETER_AUTOMATABLE[param_id])
@@ -232,6 +242,7 @@ juce::RangedAudioParameter *StateManager::get_parameter(size_t param_id)
 
 void StateManager::begin_change_gesture(size_t param_id)
 {
+    undo_manager.beginNewTransaction();
     if (PARAMETER_AUTOMATABLE[param_id])
     {
         auto parameter = get_parameter(param_id);

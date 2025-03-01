@@ -11,9 +11,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(PluginProcessor
     state = processorRef.state.get();
     startTimerHz(int(TIMER_HZ));
 
-    // INIT UNDO/REDO
-    undo_manager = state->get_undo_manager();
-
     // add slider BEFORE setting size
     gain_slider = std::make_unique<ParameterSlider>(state, PARAM::GAIN);
     addAndMakeVisible(*gain_slider);
@@ -66,14 +63,5 @@ void AudioPluginAudioProcessorEditor::timerCallback()
     }
 
     state->update_preset_modified();
-
-    if (timer_counter % (TIMER_HZ / UNDO_HZ) == 0)
-    {
-        if (!isMouseButtonDownAnywhere())
-        {
-            processorRef.state->get_undo_manager()->beginNewTransaction();
-        }
-    }
-
     timer_counter++;
 }
