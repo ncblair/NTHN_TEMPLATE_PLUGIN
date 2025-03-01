@@ -39,7 +39,8 @@ StateManager::StateManager(PluginProcessor *proc) : PRESETS_DIR(juce::File::getS
                             ss << std::fixed << std::setprecision(2) << value;
                             res = juce::String(ss.str());
                         }
-                        return (res + " " + PARAMETER_SUFFIXES[p_id]).substring(0, maximumStringLength);
+                        auto output = (res + " " + PARAMETER_SUFFIXES[p_id]);
+                        return maximumStringLength > 0 ? output.substring(0, maximumStringLength) : output;
                     },
                     [p_id](juce::String text)
                     {
