@@ -74,7 +74,6 @@ TIME_ELAPSED=$(echo "$END_TIME - $START_TIME" | bc)
 result=$?
 
 if [ ${result} = 0 ]; then
-
   say "Build successful"
   echo "Elapsed time: ${TIME_ELAPSED} seconds"
 
