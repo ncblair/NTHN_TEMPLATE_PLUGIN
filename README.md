@@ -142,7 +142,7 @@ MODE | 0 | 3 | 1 | 1 | 0 | 1 | Mode | | Change effect mode | "A" "B" "C" "D"
 
 For parameters that are combo-box drop downs or toggles, you can use the TO_STRING_ARR to input a list of string options, as shown above
 
-To convert between table data and JUCE parameters, a pre-build python script reads the `parameters.csv` file and generates C++ code that the StateManager class can use to create plugin parameters. This code is exported to the file `parameters/ParameterDefines.h` as a number of arrays of useful parameter information which can be accessed by the rest of the codebase. Any code that imports `parameters/StateManager.h` will also have access to the definitions in `ParameterDefines.h`. The following code shows how to access various attributes of a parameter from within the codebase, using the `PARAM` enum:
+To convert between table data and JUCE parameters, a pre-build cpp script reads the `parameters.csv` file and generates C++ code that the StateManager class can use to create plugin parameters. This code is exported to the file `parameters/ParameterDefines.h` as a number of arrays of useful parameter information which can be accessed by the rest of the codebase. Any code that imports `parameters/StateManager.h` will also have access to the definitions in `ParameterDefines.h`. The following code shows how to access various attributes of a parameter from within the codebase, using the `PARAM` enum:
 
 ```c++
 #include "parameters/StateManager.h"
