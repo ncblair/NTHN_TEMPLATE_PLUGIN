@@ -46,7 +46,7 @@ jobs:
         run: unzip pluginval.zip
 
       - name: Validate AU Plugin
-        run: ./pluginval.app/Contents/MacOS/pluginval --validate-in-process --output-dir "./bin" "./build-au/EXAMPLE.component" || exit 1
+        run: ./pluginval.app/Contents/MacOS/pluginval --validate-in-process --strictness-level 10 --output-dir "./bin" "./build-au/EXAMPLE.component" || exit 1
 
   validate-VST3-macos:
     runs-on: macos-latest
@@ -65,7 +65,7 @@ jobs:
         run: unzip pluginval.zip
 
       - name: Validate VST3 Plugin
-        run: ./pluginval.app/Contents/MacOS/pluginval --validate-in-process --output-dir "./bin" "./build-vst3/EXAMPLE.vst3" || exit 1
+        run: ./pluginval.app/Contents/MacOS/pluginval --validate-in-process --strictness-level 10 --output-dir "./bin" "./build-vst3/EXAMPLE.vst3" || exit 1
 
   # Validation and build happen in the same run on win, no need to separate em out
   build-and-validate-windows:
@@ -99,4 +99,4 @@ jobs:
       - name: Validate VST3 with pluginval
         shell: pwsh
         run: |
-          .\pluginval.exe --validate-in-process --output-dir "./bin" ".\build\Release\EXAMPLE_artefacts\Release\VST3\EXAMPLE.vst3"
+          .\pluginval.exe --validate-in-process --strictness-level 10 --output-dir "./bin" ".\build\Release\EXAMPLE_artefacts\Release\VST3\EXAMPLE.vst3"
