@@ -29,6 +29,5 @@ static const std::array<juce::String, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_
 	"Loudness Parameter",
 };
 static const std::array<std::vector<juce::String>, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_TO_STRING_ARRS {
-	std::vector<juce::String>{
-	},
+	std::vector<juce::String>{},
 };

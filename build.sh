@@ -1,7 +1,5 @@
 #!/bin/bash
 
-python src/parameters/create_parameters.py
-
 PLUGIN_NAME="EXAMPLE"
 MODE="RelWithDebInfo"
 
