@@ -45,8 +45,14 @@ jobs:
       - name: Unzip pluginval
         run: unzip pluginval.zip
 
+      - name: Install AU Plugin to System Directory
+        run: |
+          sudo mkdir -p /Library/Audio/Plug-Ins/Components
+          sudo cp -R ./build-au/EXAMPLE.component /Library/Audio/Plug-Ins/Components/
+          sudo killall -9 AudioComponentRegistrar || true
+
       - name: Validate AU Plugin
-        run: ./pluginval.app/Contents/MacOS/pluginval --validate-in-process --strictness-level 10 --output-dir "./bin" "./build-au/EXAMPLE.component" || exit 1
+        run: ./pluginval.app/Contents/MacOS/pluginval --validate-in-process --strictness-level 10 --output-dir "./bin" "/Library/Audio/Plug-Ins/Components/EXAMPLE.component" || exit 1
 
   validate-VST3-macos:
     runs-on: macos-latest
