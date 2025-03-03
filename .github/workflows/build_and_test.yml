@@ -78,6 +78,13 @@ jobs:
       - name: Build Plugin
         run: |
           bash build.sh -m Release --ci
+    
+      # ============ CACHE ============
+      - name: Cache Build VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-windows-vst3
+          path: ./build/Release/EXAMPLE_artefacts/Release/VST3
 
       # ============ PLUGINVAL TESTING ============
       - name: Download pluginval
@@ -93,11 +100,3 @@ jobs:
         shell: pwsh
         run: |
           .\pluginval.exe --validate-in-process --output-dir "./bin" ".\build\Release\EXAMPLE_artefacts\Release\VST3\EXAMPLE.vst3"
-          if ($LASTEXITCODE -ne 0) { exit 1 }
-
-      # ============ CACHE ============
-      - name: Cache Build VST3
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-windows-vst3
-          path: ./build/Release/EXAMPLE_artefacts/Release/VST3
