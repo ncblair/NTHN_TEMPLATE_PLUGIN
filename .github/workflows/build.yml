@@ -44,9 +44,3 @@ jobs:
         with:
             name: build-windows-vst3
             path: ./build/Release/EXAMPLE_artefacts/Release/VST3
-
-      - name: Cache Build AU
-        uses: actions/upload-artifact@v4
-        with:
-            name: build-windows-au
-            path: ./build/Release/EXAMPLE_artefacts/Release/AU

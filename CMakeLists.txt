@@ -9,6 +9,19 @@ set(ENV{MANUFACTURER_ID} MFID) # A four-character manufacturer id with at least 
 set(ENV{PLUGIN_CODE} Plid) # A unique four-character plugin id with exactly one upper-case character
 
 
+# Define a CMake option for CI builds.
+option(CI_BUILD "Enable Continuous Integration build mode" OFF)
+
+# Set the plugin formats based on the CI_BUILD flag.
+if(CI_BUILD)
+    # For CI builds, build only VST3 (or any minimal set).
+    set(PLUGIN_FORMATS "AU VST3")
+else()
+    # For regular builds, build all desired formats.
+    set(PLUGIN_FORMATS "AU VST3 Standalone")
+endif()
+
+
 #--------------------------------------------------------------------------------
 # The first line of any CMake project should be a call to `cmake_minimum_required`, which checks
 # that the installed CMake will be able to understand the following CMakeLists, and ensures that
@@ -98,7 +111,7 @@ juce_add_plugin($ENV{PLUGIN_NAME}
     PLUGIN_MANUFACTURER_CODE $ENV{MANUFACTURER_ID}               # A four-character manufacturer id with at least one upper-case character
     PLUGIN_CODE $ENV{PLUGIN_CODE}                            # A unique four-character plugin id with exactly one upper-case character
     HARDENED_RUNTIME_ENABLED TRUE               # Important for distributing with an installer on MacOS
-    FORMATS AU VST3 Standalone                  # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
+    FORMATS ${PLUGIN_FORMATS}                  # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
     PRODUCT_NAME $ENV{PLUGIN_NAME})        # The name of the final executable, which can differ from the target name
 
 
