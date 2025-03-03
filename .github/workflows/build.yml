@@ -38,9 +38,6 @@ jobs:
         with:
             submodules: recursive
 
-      - name: Install Ninja
-        run: choco install ninja -y
-
       - name: Build Plugin
         run: |
             bash build.sh -m Release --ci

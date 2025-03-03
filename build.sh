@@ -24,7 +24,7 @@ done
 ARCH=$(uname -m)
 
 # Determine the best available CMake generator.
-if command -v ninja &> /dev/null; then
+if [[ "$OS" == "Darwin" ]] && command -v ninja &> /dev/null; then
     GENERATOR="-G Ninja"
     USE_NINJA=true
 else
