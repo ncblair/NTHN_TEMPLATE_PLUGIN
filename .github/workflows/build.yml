@@ -11,9 +11,6 @@ jobs:
         with:
           submodules: recursive # This handles the git submodule update command
 
-      - name: Install Ninja
-        run: brew install ninja
-
       # ============ BUILD ============
       - name: Build Plugin
         run: |
