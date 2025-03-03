@@ -17,7 +17,7 @@ jobs:
       # ============ BUILD ============
       - name: Build Plugin
         run: |
-          bash build.sh -m Release
+          bash build.sh -m Release --ci
 
       - name: Cache Build VST3
         uses: actions/upload-artifact@v4
@@ -43,7 +43,7 @@ jobs:
 
       - name: Build Plugin
         run: |
-            bash build.sh -m Release
+            bash build.sh -m Release --ci
 
       - name: Cache Build VST3
         uses: actions/upload-artifact@v4
