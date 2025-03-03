@@ -15,8 +15,6 @@ In terminal, install xcode command line tools, git and cmake
 xcode-select --install
 brew update
 brew install git cmake 
-# optionally, for faster builds
-brew install ninja
 ```
 
 Windows:
@@ -26,8 +24,6 @@ In Command Prompt or Powershell (Run as Administrator)
 install git and cmake:
 ```sh
 choco install -y git cmake 
-# optionally, for faster builds
-choco install -y ninja
 ```
 
 For a windows terminal, I recommend Git Bash
