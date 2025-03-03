@@ -14,11 +14,11 @@ option(CI_BUILD "Enable Continuous Integration build mode" OFF)
 
 # Set the plugin formats based on the CI_BUILD flag.
 if(CI_BUILD)
-    # For CI builds, build only VST3 (or any minimal set).
-    set(PLUGIN_FORMATS "AU VST3")
+    # For CI builds, build only VST3 and AU (or any minimal set).
+    set(PLUGIN_FORMATS AU VST3)
 else()
     # For regular builds, build all desired formats.
-    set(PLUGIN_FORMATS "AU VST3 Standalone")
+    set(PLUGIN_FORMATS AU VST3 Standalone)
 endif()
 
 
