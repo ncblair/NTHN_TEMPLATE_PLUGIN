@@ -106,3 +106,4 @@ jobs:
         shell: pwsh
         run: |
           .\pluginval.exe --validate-in-process --strictness-level 10 --output-dir "./bin" ".\build\Release\EXAMPLE_artefacts\Release\VST3\EXAMPLE.vst3"
+          if %ERRORLEVEL% neq 0 exit /b 1
