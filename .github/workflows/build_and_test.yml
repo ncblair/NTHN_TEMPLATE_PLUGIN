@@ -94,16 +94,8 @@ jobs:
 
       # ============ PLUGINVAL TESTING ============
       - name: Download pluginval
-        shell: pwsh
         run: |
-          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          Invoke-WebRequest https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Windows.zip -OutFile pluginval.zip
-      - name: Expand pluginval
-        shell: pwsh
-        run: |
-          Expand-Archive pluginval.zip -DestinationPath .
-      - name: Validate VST3 with pluginval
-        shell: pwsh
-        run: |
-          .\pluginval.exe --validate-in-process --strictness-level 10 --output-dir "./bin" ".\build\Release\EXAMPLE_artefacts\Release\VST3\EXAMPLE.vst3"
+          powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Windows.zip -OutFile pluginval.zip"
+          powershell -Command "Expand-Archive pluginval.zip -DestinationPath ."
+          pluginval.exe --validate-in-process --strictness-level 10 --output-dir "./bin" ".\build\Release\EXAMPLE_artefacts\Release\VST3\EXAMPLE.vst3"
           if %ERRORLEVEL% neq 0 exit /b 1
