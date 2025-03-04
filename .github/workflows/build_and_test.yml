@@ -93,7 +93,8 @@ jobs:
           path: ./build/Release/EXAMPLE_artefacts/Release/VST3
 
       # ============ PLUGINVAL TESTING ============
-      - name: Download pluginval
+      - name: Validate with pluginval
+        shell: cmd
         run: |
           powershell -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Windows.zip -OutFile pluginval.zip"
           powershell -Command "Expand-Archive pluginval.zip -DestinationPath ."
