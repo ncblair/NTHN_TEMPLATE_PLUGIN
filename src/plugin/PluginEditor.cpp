@@ -56,12 +56,15 @@ void AudioPluginAudioProcessorEditor::resized()
 void AudioPluginAudioProcessorEditor::windowReadyToPaint()
 {
     // repaint UI and note that we have updated ui, if parameter values have changed
-    for (size_t param_id{0}; param_id < TOTAL_NUMBER_PARAMETERS; ++param_id)
+    if (state->any_parameter_changed.exchange(false))
     {
-        if (state->get_parameter_modified(param_id))
+        for (size_t param_id{0}; param_id < TOTAL_NUMBER_PARAMETERS; ++param_id)
         {
-            for (juce::Component *component : state->get_components(param_id))
-                component->repaint();
+            if (state->get_parameter_modified(param_id))
+            {
+                for (juce::Component *component : state->get_components(param_id))
+                    component->repaint();
+            }
         }
     }
 
