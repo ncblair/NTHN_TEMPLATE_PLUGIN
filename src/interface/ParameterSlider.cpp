@@ -27,9 +27,10 @@ void ParameterSlider::paint(juce::Graphics &g) {
   g.setColour(juce::Colour(0xff000000));
   auto param_name = PARAMETER_NICKNAMES[param_id];
   auto text = state->get_parameter_text(param_id);
-  g.drawText(param_name, 0, 0, getWidth(), proportionOfHeight(0.25f), juce::Justification::centred, true);
-  g.drawText(text, 0, proportionOfHeight(0.75f), getWidth(), proportionOfHeight(0.25f), juce::Justification::centred,
+  g.drawText(param_name, 0, 0, getWidth(), proportionOfHeight(0.25f), juce::Justification::centred,
              true);
+  g.drawText(text, 0, proportionOfHeight(0.75f), getWidth(), proportionOfHeight(0.25f),
+             juce::Justification::centred, true);
 
   // draw bounding box
   g.drawRect(getLocalBounds());
@@ -41,7 +42,9 @@ void ParameterSlider::update_param_id(size_t p_id) {
   setName(PARAMETER_NICKNAMES[param_id]);
 }
 
-void ParameterSlider::update_slider_sensitivity(float pixels_per_percent_) { pixels_per_percent = pixels_per_percent_; }
+void ParameterSlider::update_slider_sensitivity(float pixels_per_percent_) {
+  pixels_per_percent = pixels_per_percent_;
+}
 
 void ParameterSlider::mouseDown(const juce::MouseEvent &e) {
   state->begin_change_gesture(param_id);
@@ -76,7 +79,8 @@ void ParameterSlider::mouseUp(const juce::MouseEvent &e) {
   juce::ignoreUnused(e);
 }
 
-void ParameterSlider::draw_rotary_slider(juce::Graphics &g, float slider_pos, float x, float y, float w, float h) {
+void ParameterSlider::draw_rotary_slider(juce::Graphics &g, float slider_pos, float x, float y,
+                                         float w, float h) {
   // draw the rotary slider
   const float width = w * getWidth();
   const float height = h * getHeight();

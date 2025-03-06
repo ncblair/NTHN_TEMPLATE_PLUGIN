@@ -95,7 +95,8 @@ bool PluginProcessorBase::isBusesLayoutSupported(const BusesLayout &layouts) con
 #if NEEDS_SIDECHAIN
   // sidechain audio effect
   if (layouts.getChannelSet(true, 1) !=
-      layouts.getMainInputChannelSet()) { // number of inputs in sidechain should match number of inputs in main set
+      layouts.getMainInputChannelSet()) { // number of inputs in sidechain should match number of
+                                          // inputs in main set
     return false;
   }
 #endif

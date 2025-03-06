@@ -21,8 +21,11 @@ struct Parameter {
 
 // Simple trim helper.
 static inline void trim(std::string &s) {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) { return !std::isspace(ch); }));
-  s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
+  s.erase(s.begin(),
+          std::find_if(s.begin(), s.end(), [](unsigned char ch) { return !std::isspace(ch); }));
+  s.erase(
+      std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(),
+      s.end());
 }
 
 // If the literal has no decimal, append ".0f"; otherwise append "f".
@@ -95,50 +98,58 @@ int main() {
   headerFile << "\tTOTAL_NUMBER_PARAMETERS\n};\n";
 
   // Write arrays.
-  headerFile << "static const std::array<juce::Identifier, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_IDS{\n";
-  for (const auto &p : params)
-    headerFile << "\t\"" << p.param << "\",\n";
-  headerFile << "};\n";
-
-  headerFile << "static const std::array<juce::String, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_NAMES{\n";
+  headerFile << "static const std::array<juce::Identifier, PARAM::TOTAL_NUMBER_PARAMETERS> "
+                "PARAMETER_IDS{\n";
   for (const auto &p : params)
     headerFile << "\t\"" << p.param << "\",\n";
   headerFile << "};\n";
 
   headerFile
-      << "static const std::array<juce::NormalisableRange<float>, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_RANGES {\n";
+      << "static const std::array<juce::String, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_NAMES{\n";
   for (const auto &p : params)
-    headerFile << "\tjuce::NormalisableRange<float>(" << p.min << ", " << p.max << ", " << p.grain << ", " << p.exp
-               << "),\n";
+    headerFile << "\t\"" << p.param << "\",\n";
   headerFile << "};\n";
 
-  headerFile << "static const std::array<float, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_DEFAULTS {\n";
+  headerFile << "static const std::array<juce::NormalisableRange<float>, "
+                "PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_RANGES {\n";
+  for (const auto &p : params)
+    headerFile << "\tjuce::NormalisableRange<float>(" << p.min << ", " << p.max << ", " << p.grain
+               << ", " << p.exp << "),\n";
+  headerFile << "};\n";
+
+  headerFile
+      << "static const std::array<float, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_DEFAULTS {\n";
   for (const auto &p : params)
     headerFile << "\t" << p.defaultVal << ",\n";
   headerFile << "};\n";
 
-  headerFile << "static const std::array<bool, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_AUTOMATABLE {\n";
+  headerFile
+      << "static const std::array<bool, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_AUTOMATABLE {\n";
   for (const auto &p : params)
     headerFile << "\t" << (p.automatable == "1" ? "true" : "false") << ",\n";
   headerFile << "};\n";
 
-  headerFile << "static const std::array<juce::String, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_NICKNAMES{\n";
+  headerFile << "static const std::array<juce::String, PARAM::TOTAL_NUMBER_PARAMETERS> "
+                "PARAMETER_NICKNAMES{\n";
   for (const auto &p : params)
     headerFile << "\t\"" << p.name << "\",\n";
   headerFile << "};\n";
 
-  headerFile << "static const std::array<juce::String, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_SUFFIXES {\n";
+  headerFile << "static const std::array<juce::String, PARAM::TOTAL_NUMBER_PARAMETERS> "
+                "PARAMETER_SUFFIXES {\n";
   for (const auto &p : params)
     headerFile << "\t\"" << p.suffix << "\",\n";
   headerFile << "};\n";
 
-  headerFile << "static const std::array<juce::String, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_TOOLTIPS {\n";
+  headerFile << "static const std::array<juce::String, PARAM::TOTAL_NUMBER_PARAMETERS> "
+                "PARAMETER_TOOLTIPS {\n";
   for (const auto &p : params)
     headerFile << "\t\"" << p.tooltip << "\",\n";
   headerFile << "};\n";
 
-  headerFile << "static const std::array<std::vector<juce::String>, PARAM::TOTAL_NUMBER_PARAMETERS> "
-                "PARAMETER_TO_STRING_ARRS {\n";
+  headerFile
+      << "static const std::array<std::vector<juce::String>, PARAM::TOTAL_NUMBER_PARAMETERS> "
+         "PARAMETER_TO_STRING_ARRS {\n";
   for (const auto &p : params) {
     headerFile << "\tstd::vector<juce::String>{";
     for (const auto &s : p.toStringArr)
