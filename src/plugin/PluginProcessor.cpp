@@ -23,7 +23,8 @@ void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
   should_snap_smoothed_params.store(true);
 }
 
-void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
+void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
+                                   juce::MidiBuffer &midiMessages) {
   juce::ScopedNoDenormals noDenormals;
 
   // get audio buffer references outside of JUCE, so we can pass to non-juce processors
@@ -41,8 +42,8 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiB
   //--------
   // Tell all of our processors to force their parameters to update
   // This should get run any time the host sets state from setStateInformation
-  // i.e. there should be no startup time for the plugin parameters to load at the beginning of a render
-  // this should also get called when the plugin needs to clear tails, in reset()
+  // i.e. there should be no startup time for the plugin parameters to load at the beginning of a
+  // render this should also get called when the plugin needs to clear tails, in reset()
   //----
   if (should_snap_smoothed_params.exchange(false)) {
     // force state, to end any internal smoothing
@@ -51,8 +52,8 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiB
 
   //--------------------------------------------------------------------------------
   // process samples below.
-  // for an audio effect, buffer is filled with input samples, and you should fill it with output samples
-  // for a synth, buffer is filled with zeros, and you should fill it with output samples
+  // for an audio effect, buffer is filled with input samples, and you should fill it with output
+  // samples for a synth, buffer is filled with zeros, and you should fill it with output samples
   // see: https://docs.juce.com/master/classAudioBuffer.html
   //--------------------------------------------------------------------------------
   gain->process(bufferPtrs, numSamples, numChannels, requested_gain);
@@ -94,7 +95,9 @@ void PluginProcessor::setStateInformation(const void *data, int sizeInBytes) {
   should_snap_smoothed_params.store(true);
 }
 
-juce::AudioProcessorEditor *PluginProcessor::createEditor() { return new AudioPluginAudioProcessorEditor(*this); }
+juce::AudioProcessorEditor *PluginProcessor::createEditor() {
+  return new AudioPluginAudioProcessorEditor(*this);
+}
 
 //==============================================================================
 // This creates new instances of the plugin..

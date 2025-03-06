@@ -26,7 +26,8 @@ StateManager manages Parameters, Properties, Presets
   presets are stored in the preset tree which is a ValueTree with a property PRESET_NAME_ID
 */
 
-class StateManager : public juce::ValueTree::Listener, public juce::AudioProcessorValueTreeState::Listener {
+class StateManager : public juce::ValueTree::Listener,
+                     public juce::AudioProcessorValueTreeState::Listener {
 public:
   StateManager(PluginProcessor *proc);
   ~StateManager() override;
@@ -98,12 +99,13 @@ public:
 
   //--------------------------------------------------------------------------------
   // each component registers itself with the state manager
-  // allowing the PluginEditor to loop over each component registerd with the state manager and call repaint()
-  // if the value of the underlying parameter has changed
-  // also supports a custom callback function that does not repaint by default
-  // call this only one time per per component parameter pair
+  // allowing the PluginEditor to loop over each component registerd with the state manager and call
+  // repaint() if the value of the underlying parameter has changed also supports a custom callback
+  // function that does not repaint by default call this only one time per per component parameter
+  // pair
   //--------------------------------------------------------------------------------
-  void register_component(size_t param_id, juce::Component *component, std::function<void()> custom_callback = {});
+  void register_component(size_t param_id, juce::Component *component,
+                          std::function<void()> custom_callback = {});
   void unregister_component(size_t param_id, juce::Component *component);
   std::unordered_map<juce::Component *, std::function<void()>> &get_callbacks(size_t param_id) {
     return param_to_callback[param_id];
@@ -145,7 +147,8 @@ private:
   juce::ValueTree property_tree;
   std::unordered_map<juce::String, std::atomic<float>> property_atomics;
   std::unordered_map<juce::String, std::atomic<bool>> parameter_modified_flags;
-  std::unordered_map<juce::Component *, std::function<void()>> param_to_callback[TOTAL_NUMBER_PARAMETERS] = {};
+  std::unordered_map<juce::Component *, std::function<void()>>
+      param_to_callback[TOTAL_NUMBER_PARAMETERS] = {};
 
   juce::ValueTree preset_tree;
 
