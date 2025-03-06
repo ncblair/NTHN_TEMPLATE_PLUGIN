@@ -21,35 +21,34 @@ class ParameterSlider;
 // parameter listeners CAN get called by the host from the audio thread, which leads
 // to issues with thread safety and realtime safety
 //==============================================================================
-class AudioPluginAudioProcessorEditor : public juce::AudioProcessorEditor
-{
+class AudioPluginAudioProcessorEditor : public juce::AudioProcessorEditor {
 public:
-    explicit AudioPluginAudioProcessorEditor(PluginProcessor &);
-    ~AudioPluginAudioProcessorEditor() override;
+  explicit AudioPluginAudioProcessorEditor(PluginProcessor &);
+  ~AudioPluginAudioProcessorEditor() override;
 
-    //==============================================================================
-    void paint(juce::Graphics &) override;
+  //==============================================================================
+  void paint(juce::Graphics &) override;
 
-    void resized() override;
+  void resized() override;
 
 private:
-    void windowReadyToPaint();
+  void windowReadyToPaint();
 
-    const int W = 900; // width
-    const int H = 500; // height
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
-    PluginProcessor &processorRef;
+  const int W = 900; // width
+  const int H = 500; // height
+  // This reference is provided as a quick way for your editor to
+  // access the processor object that created it.
+  PluginProcessor &processorRef;
 
-    // a convenient pointer to the state manager
-    // which is owned by the processor
-    StateManager *state;
+  // a convenient pointer to the state manager
+  // which is owned by the processor
+  StateManager *state;
 
-    // A single slider
-    std::unique_ptr<ParameterSlider> gain_slider;
+  // A single slider
+  std::unique_ptr<ParameterSlider> gain_slider;
 
-    // VBlank Attachment for handling state before repainting
-    std::unique_ptr<juce::VBlankAttachment> repaint_callback_handler;
+  // VBlank Attachment for handling state before repainting
+  std::unique_ptr<juce::VBlankAttachment> repaint_callback_handler;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessorEditor)
+  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessorEditor)
 };

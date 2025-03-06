@@ -11,31 +11,30 @@ class Gain;
 #include <atomic>
 
 //==============================================================================
-class PluginProcessor : public PluginProcessorBase
-{
+class PluginProcessor : public PluginProcessorBase {
 public:
-    //==============================================================================
-    PluginProcessor();
-    ~PluginProcessor() override;
-    //==============================================================================
-    void prepareToPlay(double sampleRate, int samplesPerBlock) override;
-    void processBlock(juce::AudioBuffer<float> &, juce::MidiBuffer &) override;
-    void reset() override;
-    //==============================================================================
-    void getStateInformation(juce::MemoryBlock &destData) override;
-    void setStateInformation(const void *data, int sizeInBytes) override;
-    //==============================================================================
-    juce::AudioProcessorEditor *createEditor() override;
-    //==============================================================================
-    // state
-    //==============================================================================
-    std::unique_ptr<StateManager> state;
+  //==============================================================================
+  PluginProcessor();
+  ~PluginProcessor() override;
+  //==============================================================================
+  void prepareToPlay(double sampleRate, int samplesPerBlock) override;
+  void processBlock(juce::AudioBuffer<float> &, juce::MidiBuffer &) override;
+  void reset() override;
+  //==============================================================================
+  void getStateInformation(juce::MemoryBlock &destData) override;
+  void setStateInformation(const void *data, int sizeInBytes) override;
+  //==============================================================================
+  juce::AudioProcessorEditor *createEditor() override;
+  //==============================================================================
+  // state
+  //==============================================================================
+  std::unique_ptr<StateManager> state;
 
 private:
-    std::unique_ptr<Gain> gain;
+  std::unique_ptr<Gain> gain;
 
-    std::atomic<bool> should_snap_smoothed_params{true};
+  std::atomic<bool> should_snap_smoothed_params{true};
 
-    //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
+  //==============================================================================
+  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
 };
