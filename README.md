@@ -237,7 +237,7 @@ private:
     std::unique_ptr<ParameterSlider> parameter_2_slider;
 ```
 
-Then, sliders may be created and positioned in the `plugin/PluginEditor.cpp` file. Use the `AudioPluginAudioProcessorEditor::timerCallback` method to poll for state changes and trigger UI repainting. Polling from the timer callback enables efficient and real-time safe repainting from the message thread. 
+Then, sliders may be created and positioned in the `plugin/PluginEditor.cpp` file. registering custom components with the StateManager allows the plugin editor to poll for state changes and trigger UI repainting. Polling from the VBlank callback enables efficient and real-time safe repainting from the message thread. 
 
 ```c++
 // Add elements in the constructor
@@ -267,23 +267,48 @@ void AudioPluginAudioProcessorEditor::resized()
     parameter_2_slider->setBounds(slider_2_x, slider_y, slider_size, slider_size);
 }
 
-// Trigger repaint calls on parameter changes in the TimerCallback
-// Only repaint components relevant to that parameter's changes
+// In custom components, give the state manager the ability to call repaint on your component when a param changes
+// For example, in the example ParameterSlider.cpp
 
-void AudioPluginAudioProcessorEditor::timerCallback() {
+ParameterSlider::ParameterSlider(StateManager *s, size_t p_id)
+    : juce::SettableTooltipClient(), juce::Component(),
+      state(s)
+{
     ...
+    state->register_component(param_id, this);
+}
 
-    // handle parameter values in the UI (repaint relevant components)
-    if (state->any_parameter_changed.exchange(false)) {
-        if (state->get_parameter_modified(PARAM::GAIN)) {
-            gain_slider->repaint();
-        }
-        if (state->get_parameter_modified(PARAM::PARAM2)) {
-            parameter_2_slider->repaint();
+ParameterSlider::~ParameterSlider()
+{
+    state->unregister_component(param_id, this);
+}
+
+// Then, back in PluginEditor.cpp, the template code automatically handles repainting 
+// which is the default behavior of callback_fn. 
+// No need to make any changes here
+
+void AudioPluginAudioProcessorEditor::windowReadyToPaint()
+{
+    // repaint UI and note that we have updated ui, if parameter values have changed
+    if (state->any_parameter_changed.exchange(false))
+    {
+        for (size_t param_id{0}; param_id < TOTAL_NUMBER_PARAMETERS; ++param_id)
+        {
+            if (state->get_parameter_modified(param_id))
+            {
+                for (const auto& [component, callback_fn] : state->get_callbacks(param_id))
+                    callback_fn();
+            }
         }
     }
-    ...`
+
+    ...
 }
+
+// To add custom callbacks that run when parameters change inside of a component, 
+// pass a custom callback function to register_component like so: 
+// if you do this, make sure to also call repaint() from your custom function (if you want)
+state->register_component(param_id, this, [this](){ custom_logic(); repaint(); });
 
 ```
 
