@@ -97,6 +97,17 @@ public:
     void parameterChanged(const juce::String &parameterID, float newValue) override;
 
     //--------------------------------------------------------------------------------
+    // each component registers itself with the state manager
+    // allowing the PluginEditor to loop over each component registerd with the state manager and call repaint()
+    // if the value of the underlying parameter has changed
+    // also supports a custom callback function that does not repaint by default
+    // call this only one time per per component parameter pair
+    //--------------------------------------------------------------------------------
+    void register_component(size_t param_id, juce::Component* component, std::function<void()> custom_callback={});
+    void unregister_component(size_t param_id, juce::Component* component);
+    std::unordered_map<juce::Component*, std::function<void()>> &get_callbacks(size_t param_id) { return param_to_callback[param_id]; }
+
+    //--------------------------------------------------------------------------------
     // const identifiers used for accessing ValueTrees
     // You might be able to make these private, depends on your implementation
     // One reason they should be public: if you copy a valueTree to a separate component
@@ -125,15 +136,6 @@ public:
     std::atomic<bool> any_parameter_changed{false};
     std::atomic<bool> preset_modified{true};
 
-    //--------------------------------------------------------------------------------
-    // each component registers itself with the state manager
-    // allowing the PluginEditor to loop over each component registerd with the state manager and call repaint()
-    // if the value of the underlying parameter has changed
-    //--------------------------------------------------------------------------------
-    void register_component(size_t id, juce::Component *component);
-    void unregister_component(size_t id, juce::Component *component);
-    std::vector<juce::Component *> &get_components(size_t id) { return param_to_component[id]; }
-
 private:
     // state
     juce::ValueTree state_tree;
@@ -141,7 +143,7 @@ private:
     juce::ValueTree property_tree;
     std::unordered_map<juce::String, std::atomic<float>> property_atomics;
     std::unordered_map<juce::String, std::atomic<bool>> parameter_modified_flags;
-    std::vector<juce::Component *> param_to_component[TOTAL_NUMBER_PARAMETERS] = {};
+    std::unordered_map<juce::Component*, std::function<void()>> param_to_callback[TOTAL_NUMBER_PARAMETERS] = {};
 
     juce::ValueTree preset_tree;
 
