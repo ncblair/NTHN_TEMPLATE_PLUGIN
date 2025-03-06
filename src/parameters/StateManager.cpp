@@ -368,15 +368,20 @@ void StateManager::parameterChanged(const juce::String &parameterID, float newVa
     juce::ignoreUnused(newValue);
 }
 
-void StateManager::register_component(size_t id, juce::Component *component)
+void StateManager::register_component(size_t param_id, juce::Component* component, std::function<void()> custom_callback)
+// custom_callback is called when the parameter changes. default is to just repaint the component
+// call this only one time per per component parameter pair
 {
-    assert(id <= TOTAL_NUMBER_PARAMETERS);
-    param_to_component[id].push_back(component);
+    assert(param_id <= TOTAL_NUMBER_PARAMETERS);
+    assert(param_to_callback[param_id].find(component) == param_to_callback[param_id].end());
+    if (custom_callback)
+        param_to_callback[param_id][component] = custom_callback;
+    else
+        param_to_callback[param_id][component] = [component](){component->repaint();};
 }
 
-void StateManager::unregister_component(size_t id, juce::Component *component)
+void StateManager::unregister_component(size_t param_id, juce::Component* component)
 {
-    assert(id <= TOTAL_NUMBER_PARAMETERS);
-    std::vector<juce::Component *> &vec = param_to_component[id];
-    vec.erase(std::remove(vec.begin(), vec.end(), component), vec.end());
+    assert(param_id <= TOTAL_NUMBER_PARAMETERS);
+    param_to_callback[param_id].erase(component);
 }

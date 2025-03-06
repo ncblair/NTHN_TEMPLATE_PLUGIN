@@ -62,8 +62,8 @@ void AudioPluginAudioProcessorEditor::windowReadyToPaint()
         {
             if (state->get_parameter_modified(param_id))
             {
-                for (juce::Component *component : state->get_components(param_id))
-                    component->repaint();
+                for (const auto& [component, callback_fn] : state->get_callbacks(param_id))
+                    callback_fn();
             }
         }
     }
