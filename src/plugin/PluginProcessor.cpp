@@ -19,11 +19,13 @@ void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
   // variables that depend on sample rate or block size
 
   gain = std::make_unique<Gain>(float(sampleRate), samplesPerBlock, getTotalNumOutputChannels(),
-                                PARAMETER_DEFAULTS[PARAM::GAIN] / 100.0f);
+                                PARAMETER_DEFAULTS[PARAM::GAIN],
+                                PARAMETER_DEFAULTS[PARAM::MIX] / 100.0f);
   should_snap_smoothed_params.store(true);
 }
 
-void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuffer &midiMessages) {
+void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
+                                   juce::MidiBuffer &midiMessages) {
   juce::ScopedNoDenormals noDenormals;
 
   // get audio buffer references outside of JUCE, so we can pass to non-juce processors
@@ -36,26 +38,27 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiB
   // in this case, gain goes from 0 to 100 (see: ../parameters/parameters.csv)
   // so we normalize it to 0 to 1
   //--------------------------------------------------------------------------------
-  auto requested_gain = state->param_value(PARAM::GAIN) / 100.0f;
+  auto requested_gain = state->param_value(PARAM::GAIN);
+  auto requested_mix = state->param_value(PARAM::MIX) / 100.0f;
 
   //--------
   // Tell all of our processors to force their parameters to update
   // This should get run any time the host sets state from setStateInformation
-  // i.e. there should be no startup time for the plugin parameters to load at the beginning of a render
-  // this should also get called when the plugin needs to clear tails, in reset()
+  // i.e. there should be no startup time for the plugin parameters to load at the beginning of a
+  // render this should also get called when the plugin needs to clear tails, in reset()
   //----
   if (should_snap_smoothed_params.exchange(false)) {
     // force state, to end any internal smoothing
-    gain->setState(state->param_value(PARAM::GAIN) / 100.0f);
+    gain->setState(state->param_value(PARAM::GAIN), state->param_value(PARAM::MIX) / 100.0f);
   }
 
   //--------------------------------------------------------------------------------
   // process samples below.
-  // for an audio effect, buffer is filled with input samples, and you should fill it with output samples
-  // for a synth, buffer is filled with zeros, and you should fill it with output samples
+  // for an audio effect, buffer is filled with input samples, and you should fill it with output
+  // samples for a synth, buffer is filled with zeros, and you should fill it with output samples
   // see: https://docs.juce.com/master/classAudioBuffer.html
   //--------------------------------------------------------------------------------
-  gain->process(bufferPtrs, numSamples, numChannels, requested_gain);
+  gain->process(bufferPtrs, numSamples, numChannels, requested_gain, requested_mix);
   //--------------------------------------------------------------------------------
   // you can use midiMessages to read midi if you need.
   // since we are not using midi yet, we clear the buffer.
@@ -94,7 +97,9 @@ void PluginProcessor::setStateInformation(const void *data, int sizeInBytes) {
   should_snap_smoothed_params.store(true);
 }
 
-juce::AudioProcessorEditor *PluginProcessor::createEditor() { return new AudioPluginAudioProcessorEditor(*this); }
+juce::AudioProcessorEditor *PluginProcessor::createEditor() {
+  return new AudioPluginAudioProcessorEditor(*this);
+}
 
 //==============================================================================
 // This creates new instances of the plugin..

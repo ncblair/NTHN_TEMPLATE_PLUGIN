@@ -6,10 +6,11 @@
 #include <cassert>
 
 StateManager::StateManager(PluginProcessor *proc)
-    : PRESETS_DIR(juce::File::getSpecialLocation(juce::File::SpecialLocationType::userMusicDirectory)
-                      .getChildFile(juce::String(JucePlugin_Manufacturer) + "_plugins")
-                      .getChildFile(JucePlugin_Name)
-                      .getChildFile("presets")),
+    : PRESETS_DIR(
+          juce::File::getSpecialLocation(juce::File::SpecialLocationType::userMusicDirectory)
+              .getChildFile(juce::String(JucePlugin_Manufacturer) + "_plugins")
+              .getChildFile(JucePlugin_Name)
+              .getChildFile("presets")),
       PRESET_EXTENSION("." + juce::String(JucePlugin_Name).toLowerCase()) {
   //==============================================================================
   //-> ADD PARAMS/PROPERTIES
@@ -24,7 +25,7 @@ StateManager::StateManager(PluginProcessor *proc)
           PARAMETER_NICKNAMES[p_id],                                            // parameter name
           PARAMETER_RANGES[p_id],                                               // range
           PARAMETER_DEFAULTS[p_id],                                             // default value
-          "",                                                                   // parameter label (description?)
+          "", // parameter label (description?)
           juce::AudioProcessorParameter::Category::genericParameter,
           PARAMETER_VALUE_TO_STRING_FUNCTIONS[p_id], PARAMETER_STRING_TO_VALUE_FUNCTIONS[p_id]));
     } else {
@@ -34,8 +35,8 @@ StateManager::StateManager(PluginProcessor *proc)
     parameter_modified_flags[PARAMETER_NAMES[p_id]].store(false);
   }
 
-  param_tree_ptr.reset(
-      new juce::AudioProcessorValueTreeState(*proc, &undo_manager, PARAMETERS_ID, {params.begin(), params.end()}));
+  param_tree_ptr.reset(new juce::AudioProcessorValueTreeState(*proc, &undo_manager, PARAMETERS_ID,
+                                                              {params.begin(), params.end()}));
   property_tree.addListener(this);
 
   for (size_t p_id = 0; p_id < PARAM::TOTAL_NUMBER_PARAMETERS; ++p_id) {
@@ -116,7 +117,8 @@ void StateManager::load_from(juce::XmlElement *xml) {
   if (xml != nullptr) {
     if (xml->hasTagName(STATE_ID)) {
       auto new_tree = juce::ValueTree::fromXml(*xml);
-      param_tree_ptr->state.copyPropertiesAndChildrenFrom(new_tree.getChildWithName(PARAMETERS_ID), &undo_manager);
+      param_tree_ptr->state.copyPropertiesAndChildrenFrom(new_tree.getChildWithName(PARAMETERS_ID),
+                                                          &undo_manager);
       property_tree.copyPropertiesFrom(new_tree.getChildWithName(PROPERTIES_ID), &undo_manager);
       preset_tree.copyPropertiesFrom(new_tree.getChildWithName(PRESET_ID), &undo_manager);
       preset_modified.store(false);
@@ -210,9 +212,12 @@ void StateManager::randomize_parameter(size_t param_id, float min, float max) {
 }
 
 juce::String StateManager::get_parameter_text(size_t param_id) {
-  return get_parameter(param_id)->getText(PARAMETER_RANGES[param_id].convertTo0to1(param_value(param_id)), 20);
+  return get_parameter(param_id)->getText(
+      PARAMETER_RANGES[param_id].convertTo0to1(param_value(param_id)), 20);
 }
-void StateManager::reset_parameter(size_t param_id) { set_parameter(param_id, PARAMETER_DEFAULTS[param_id]); }
+void StateManager::reset_parameter(size_t param_id) {
+  set_parameter(param_id, PARAMETER_DEFAULTS[param_id]);
+}
 
 void StateManager::init() {
   for (size_t i = 0; i < PARAM::TOTAL_NUMBER_PARAMETERS; ++i) {

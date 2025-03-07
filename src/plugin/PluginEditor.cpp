@@ -11,7 +11,11 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(PluginProcessor
 
   // add slider BEFORE setting size
   gain_slider = std::make_unique<ParameterSlider>(state, PARAM::GAIN);
+  mix_slider = std::make_unique<ParameterSlider>(state, PARAM::MIX);
+  mode_slider = std::make_unique<ParameterSlider>(state, PARAM::MODE);
   addAndMakeVisible(*gain_slider);
+  addAndMakeVisible(*mix_slider);
+  addAndMakeVisible(*mode_slider);
 
   // some settings about UI
   setOpaque(true);
@@ -24,7 +28,8 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(PluginProcessor
   getConstrainer()->setFixedAspectRatio(float(W) / float(H));
 
   // VBlank attachment / Timer
-  repaint_callback_handler = std::make_unique<juce::VBlankAttachment>(this, [this](double) { windowReadyToPaint(); });
+  repaint_callback_handler =
+      std::make_unique<juce::VBlankAttachment>(this, [this](double) { windowReadyToPaint(); });
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor() {
@@ -47,6 +52,8 @@ void AudioPluginAudioProcessorEditor::resized() {
   int slider_x = proportionOfWidth(0.5f) - (slider_size / 2);
   int slider_y = proportionOfHeight(0.5f) - (slider_size / 2);
   gain_slider->setBounds(slider_x, slider_y, slider_size, slider_size);
+  mix_slider->setBounds(slider_x + slider_size, slider_y, slider_size, slider_size);
+  mode_slider->setBounds(slider_x - slider_size, slider_y, slider_size, slider_size);
 }
 
 void AudioPluginAudioProcessorEditor::windowReadyToPaint() {

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 
@@ -9,7 +10,6 @@ static inline float tau2pole(const float tau, const float sr) {
 static inline float lerp(const float x1, const float x2, const float alpha) {
   return x1 + alpha * (x2 - x1);
 }
-
 /**
  * Midi To Frequency
  * Conversion===========================================================================
@@ -38,6 +38,5 @@ static inline float db2gain(const float db) {
   return fastPowerOfTwo(db * 0.1660964047);
 } // 2^db/(20 * log2(10))
 static inline float db2gainAccurate(const float db) { return std::pow(10.0f, db / 20.0f); }
->>>>>>> Stashed changes
 } // namespace nthn_utils
 // nthn_utils

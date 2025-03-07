@@ -112,8 +112,8 @@ int main() {
     headerFile << "\t\"" << p.param << "\",\n";
   headerFile << "};\n\n";
 
-  headerFile << "static const std::array<juce::NormalisableRange<float>, "
-                "PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_RANGES {\n";
+  headerFile
+      << "static const std::array<juce::String, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_NAMES{\n";
   for (const auto &p : params)
     headerFile << "\t\"" << p.param << "\",\n";
   headerFile << "};\n\n";
@@ -155,14 +155,8 @@ int main() {
     headerFile << "\t\"" << p.tooltip << "\",\n";
   headerFile << "};\n\n";
 
-<<<<<<< Updated upstream
-  headerFile
-      << "static const std::array<std::vector<juce::String>, PARAM::TOTAL_NUMBER_PARAMETERS> "
-         "PARAMETER_TO_STRING_ARRS {\n";
-=======
   headerFile << "static const std::array<std::vector<juce::String>, "
                 "PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_TO_STRING_ARRS {\n";
->>>>>>> Stashed changes
   for (const auto &p : params) {
     headerFile << "\tstd::vector<juce::String>{";
     for (const auto &s : p.toStringArr)
@@ -183,7 +177,7 @@ int main() {
     }
     if (CUSTOM_PARAMETER_STRING_TO_VALUE_FUNCTIONS.find(p.param) !=
         CUSTOM_PARAMETER_STRING_TO_VALUE_FUNCTIONS.end()) {
-      headerFile << "static const std::function<float(const juce::String&)> CUSTOM_STRING_TO_VALUE_"
+      headerFile << "static const std::function<float(const std::string&)> CUSTOM_STRING_TO_VALUE_"
                  << p.param << " = CUSTOM_PARAMETER_STRING_TO_VALUE_FUNCTIONS.at(\"" << p.param
                  << "\");\n";
     }
@@ -191,15 +185,16 @@ int main() {
   headerFile << "\n";
 
   // Array for converting value to string.
-  headerFile << "static const std::array<std::function<std::string(const float, const int)>, "
+  headerFile << "static const std::array<std::function<juce::String(const float, const int)>, "
                 "PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_VALUE_TO_STRING_FUNCTIONS {\n";
   for (size_t i = 0; i < params.size(); i++) {
     const auto &p = params[i];
-    headerFile << "\t[p_id = " << i << "](float value, int maximumStringLength) -> std::string {\n";
+    headerFile << "\t[p_id = " << i
+               << "](float value, int maximumStringLength) -> juce::String {\n";
     if (CUSTOM_PARAMETER_VALUE_TO_STRING_FUNCTIONS.find(p.param) !=
         CUSTOM_PARAMETER_VALUE_TO_STRING_FUNCTIONS.end()) {
-      headerFile << "\t\treturn CUSTOM_VALUE_TO_STRING_" << p.param
-                 << "(value, maximumStringLength);\n";
+      headerFile << "\t\treturn juce::String(CUSTOM_VALUE_TO_STRING_" << p.param
+                 << "(value, maximumStringLength));\n";
     } else {
       headerFile << "\t\tauto to_string_size = PARAMETER_TO_STRING_ARRS[p_id].size();\n";
       headerFile << "\t\tjuce::String res;\n";
@@ -214,7 +209,7 @@ int main() {
       headerFile << "\t\t}\n";
       headerFile << "\t\tauto output = (res + \" \" + PARAMETER_SUFFIXES[p_id]);\n";
       headerFile << "\t\treturn maximumStringLength > 0 ? output.substring(0, "
-                    "maximumStringLength).toStdString() : output.toStdString();\n";
+                    "maximumStringLength) : output;\n";
     }
     headerFile << "\t},\n";
   }
