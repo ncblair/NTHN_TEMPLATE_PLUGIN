@@ -28,13 +28,13 @@ static const std::array<juce::String, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_
 
 static const std::array<juce::NormalisableRange<float>, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_RANGES {
 	juce::NormalisableRange<float>(0.0f, 1.0f, 0.0f, 1.0f),
-	juce::NormalisableRange<float>(0.0f, 3.0f, 1.0f, 1.0f),
+	juce::NormalisableRange<float>(0.0f, 1.0f, 1.0f, 1.0f),
 	juce::NormalisableRange<float>(0.0f, 100.0f, 0.0f, 1.0f),
 };
 
 static const std::array<float, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_DEFAULTS {
 	0.5f,
-	3.0f,
+	0.0f,
 	50.0f,
 };
 
@@ -64,19 +64,25 @@ static const std::array<juce::String, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_
 
 static const std::array<std::vector<juce::String>, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_TO_STRING_ARRS {
 	std::vector<juce::String>{},
-	std::vector<juce::String>{"A", "B", "C", "D", },
+	std::vector<juce::String>{"Decibels", "Amplitude", },
 	std::vector<juce::String>{},
 };
 
+static const std::array<std::vector<juce::Identifier>, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_DEPENDENCY_IDS {
+	std::vector<juce::Identifier>{"MODE", },
+	std::vector<juce::Identifier>{},
+	std::vector<juce::Identifier>{},
+};
+
 // Precomputed custom function pointers for streamlined lambda functions.
-static const std::function<std::string(const float, const int)> CUSTOM_VALUE_TO_STRING_GAIN = CUSTOM_PARAMETER_VALUE_TO_STRING_FUNCTIONS.at("GAIN");
+static const std::function<std::string(const float, const int, const float*, const int)> CUSTOM_VALUE_TO_STRING_GAIN = CUSTOM_PARAMETER_VALUE_TO_STRING_FUNCTIONS.at("GAIN");
 static const std::function<float(const std::string&)> CUSTOM_STRING_TO_VALUE_GAIN = CUSTOM_PARAMETER_STRING_TO_VALUE_FUNCTIONS.at("GAIN");
 
-static const std::array<std::function<juce::String(const float, const int)>, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_VALUE_TO_STRING_FUNCTIONS {
-	[p_id = 0](float value, int maximumStringLength) -> juce::String {
-		return juce::String(CUSTOM_VALUE_TO_STRING_GAIN(value, maximumStringLength));
+static const std::array<std::function<juce::String(const float, const int, const float*, const int)>, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_VALUE_TO_STRING_FUNCTIONS {
+	[p_id = 0](float value, int maximumStringLength, const float *dependencies, int num_dependencies) -> juce::String {
+		return juce::String(CUSTOM_VALUE_TO_STRING_GAIN(value, maximumStringLength, dependencies, num_dependencies));
 	},
-	[p_id = 1](float value, int maximumStringLength) -> juce::String {
+	[p_id = 1](float value, int maximumStringLength, const float *dependencies, int num_dependencies) -> juce::String {
 		auto to_string_size = PARAMETER_TO_STRING_ARRS[p_id].size();
 		juce::String res;
 		if (to_string_size > 0 && static_cast<unsigned int>(value) < to_string_size) {
@@ -89,7 +95,7 @@ static const std::array<std::function<juce::String(const float, const int)>, PAR
 		auto output = (res + " " + PARAMETER_SUFFIXES[p_id]);
 		return maximumStringLength > 0 ? output.substring(0, maximumStringLength) : output;
 	},
-	[p_id = 2](float value, int maximumStringLength) -> juce::String {
+	[p_id = 2](float value, int maximumStringLength, const float *dependencies, int num_dependencies) -> juce::String {
 		auto to_string_size = PARAMETER_TO_STRING_ARRS[p_id].size();
 		juce::String res;
 		if (to_string_size > 0 && static_cast<unsigned int>(value) < to_string_size) {

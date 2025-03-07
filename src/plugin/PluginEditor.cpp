@@ -13,6 +13,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(PluginProcessor
   gain_slider = std::make_unique<ParameterSlider>(state, PARAM::GAIN);
   mix_slider = std::make_unique<ParameterSlider>(state, PARAM::MIX);
   mode_slider = std::make_unique<ParameterSlider>(state, PARAM::MODE);
+
+  // since gain depends on mode, we do an additional register call here.
+  state->register_component(PARAM::MODE, gain_slider.get());
   addAndMakeVisible(*gain_slider);
   addAndMakeVisible(*mix_slider);
   addAndMakeVisible(*mode_slider);
@@ -37,6 +40,7 @@ AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor() {
 
   // also, if we have a lookAndFeel object we should call:
   // setLookAndFeel(nullptr);
+  state->unregister_component(PARAM::MODE, gain_slider.get());
 }
 
 //==============================================================================

@@ -82,6 +82,7 @@ public:
   juce::String get_preset_name();
   void update_preset_modified();
   bool get_parameter_modified(size_t param_id, bool exchange_value = false);
+  size_t get_parameter_index(juce::String param_name);
 
   //--------------------------------------------------------------------------------
   // a single UndoManager is shared by all ValueTrees

@@ -23,6 +23,7 @@ struct Parameter {
   std::string suffix;
   std::string tooltip;
   std::vector<std::string> toStringArr;
+  std::vector<std::string> dependencies; // New field for dependencies.
 };
 
 // Simple trim helper.
@@ -59,7 +60,8 @@ int main() {
       trim(token);
       tokens.push_back(token);
     }
-    if (tokens.size() < 11) tokens.resize(11, "");
+    // Ensure we have 12 tokens (including DEPENDENCIES)
+    if (tokens.size() < 12) tokens.resize(12, "");
 
     Parameter p;
     p.param = tokens[0];
@@ -73,12 +75,25 @@ int main() {
     p.suffix = tokens[8];
     p.tooltip = tokens[9];
 
-    std::istringstream arrStream(tokens[10]);
-    std::string arrToken;
-    while (arrStream >> arrToken) {
-      if (arrToken.size() >= 2 && arrToken.front() == '"' && arrToken.back() == '"')
-        arrToken = arrToken.substr(1, arrToken.size() - 2);
-      p.toStringArr.push_back(arrToken);
+    // Parse TO_STRING_ARR field.
+    {
+      std::istringstream arrStream(tokens[10]);
+      std::string arrToken;
+      while (arrStream >> arrToken) {
+        if (arrToken.size() >= 2 && arrToken.front() == '"' && arrToken.back() == '"')
+          arrToken = arrToken.substr(1, arrToken.size() - 2);
+        p.toStringArr.push_back(arrToken);
+      }
+    }
+    // Parse DEPENDENCIES field.
+    {
+      std::istringstream depStream(tokens[11]);
+      std::string depToken;
+      while (depStream >> depToken) {
+        if (depToken.size() >= 2 && depToken.front() == '"' && depToken.back() == '"')
+          depToken = depToken.substr(1, depToken.size() - 2);
+        p.dependencies.push_back(depToken);
+      }
     }
     params.push_back(p);
   }
@@ -165,13 +180,24 @@ int main() {
   }
   headerFile << "};\n\n";
 
+  // New: Parameter Dependencies array.
+  headerFile << "static const std::array<std::vector<juce::Identifier>, "
+                "PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_DEPENDENCY_IDS {\n";
+  for (const auto &p : params) {
+    headerFile << "\tstd::vector<juce::Identifier>{";
+    for (const auto &d : p.dependencies)
+      headerFile << "\"" << d << "\", ";
+    headerFile << "},\n";
+  }
+  headerFile << "};\n\n";
+
   // Precompute custom function pointers.
   headerFile << "// Precomputed custom function pointers for streamlined lambda functions.\n";
   for (const auto &p : params) {
     if (CUSTOM_PARAMETER_VALUE_TO_STRING_FUNCTIONS.find(p.param) !=
         CUSTOM_PARAMETER_VALUE_TO_STRING_FUNCTIONS.end()) {
-      headerFile << "static const std::function<std::string(const float, const int)> "
-                    "CUSTOM_VALUE_TO_STRING_"
+      headerFile << "static const std::function<std::string(const float, const int, const float*, "
+                    "const int)> CUSTOM_VALUE_TO_STRING_"
                  << p.param << " = CUSTOM_PARAMETER_VALUE_TO_STRING_FUNCTIONS.at(\"" << p.param
                  << "\");\n";
     }
@@ -184,17 +210,19 @@ int main() {
   }
   headerFile << "\n";
 
-  // Array for converting value to string.
-  headerFile << "static const std::array<std::function<juce::String(const float, const int)>, "
+  // Array for converting value to string with dependencies.
+  headerFile << "static const std::array<std::function<juce::String(const float, const int, const "
+                "float*, const int)>, "
                 "PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_VALUE_TO_STRING_FUNCTIONS {\n";
   for (size_t i = 0; i < params.size(); i++) {
     const auto &p = params[i];
     headerFile << "\t[p_id = " << i
-               << "](float value, int maximumStringLength) -> juce::String {\n";
+               << "](float value, int maximumStringLength, const float *dependencies, int "
+                  "num_dependencies) -> juce::String {\n";
     if (CUSTOM_PARAMETER_VALUE_TO_STRING_FUNCTIONS.find(p.param) !=
         CUSTOM_PARAMETER_VALUE_TO_STRING_FUNCTIONS.end()) {
       headerFile << "\t\treturn juce::String(CUSTOM_VALUE_TO_STRING_" << p.param
-                 << "(value, maximumStringLength));\n";
+                 << "(value, maximumStringLength, dependencies, num_dependencies));\n";
     } else {
       headerFile << "\t\tauto to_string_size = PARAMETER_TO_STRING_ARRS[p_id].size();\n";
       headerFile << "\t\tjuce::String res;\n";
@@ -208,8 +236,8 @@ int main() {
       headerFile << "\t\t\tres = juce::String(ss.str());\n";
       headerFile << "\t\t}\n";
       headerFile << "\t\tauto output = (res + \" \" + PARAMETER_SUFFIXES[p_id]);\n";
-      headerFile << "\t\treturn maximumStringLength > 0 ? output.substring(0, "
-                    "maximumStringLength) : output;\n";
+      headerFile << "\t\treturn maximumStringLength > 0 ? output.substring(0, maximumStringLength) "
+                    ": output;\n";
     }
     headerFile << "\t},\n";
   }
