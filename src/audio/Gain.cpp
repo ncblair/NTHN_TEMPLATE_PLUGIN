@@ -8,7 +8,8 @@ Gain::Gain(float sample_rate, int, int, float default_gain_)
 
 Gain::~Gain() {}
 
-void Gain::process(float *const *buffer, const int numSamples, const int numChannels, const float gain) {
+void Gain::process(float *const *buffer, const int numSamples, const int numChannels,
+                   const float gain) {
   // get variable smooth_gain in a register
   float local_gain = smooth_gain;
   for (int i = 0; i < numSamples; ++i) {
