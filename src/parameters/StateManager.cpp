@@ -141,16 +141,15 @@ void StateManager::load_preset(juce::String preset_name) {
 }
 
 void StateManager::load_from(juce::XmlElement *xml) {
-  if (xml != nullptr) {
-    if (xml->hasTagName(STATE_ID)) {
-      auto new_tree = juce::ValueTree::fromXml(*xml);
-      param_tree_ptr->state.copyPropertiesAndChildrenFrom(new_tree.getChildWithName(PARAMETERS_ID),
-                                                          &undo_manager);
-      property_tree.copyPropertiesFrom(new_tree.getChildWithName(PROPERTIES_ID), &undo_manager);
-      preset_tree.copyPropertiesFrom(new_tree.getChildWithName(PRESET_ID), &undo_manager);
-      preset_modified.store(false);
+    if (xml != nullptr) {
+        if (xml->hasTagName(STATE_ID)) {
+            auto new_tree = juce::ValueTree::fromXml(*xml);
+            param_tree_ptr->replaceState(new_tree.getChildWithName(PARAMETERS_ID));
+            property_tree.copyPropertiesFrom(new_tree.getChildWithName(PROPERTIES_ID), &undo_manager);
+            preset_tree.copyPropertiesFrom(new_tree.getChildWithName(PRESET_ID), &undo_manager);
+            preset_modified.store(false);
+        }
     }
-  }
 }
 
 void StateManager::set_preset_name(juce::String preset_name) {
