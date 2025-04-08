@@ -7,11 +7,19 @@
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(PluginProcessor &p)
     : AudioProcessorEditor(&p), processorRef(p) {
+  DBG("editor constructor");
   state = processorRef.state.get();
 
   // add slider BEFORE setting size
   gain_slider = std::make_unique<ParameterSlider>(state, PARAM::GAIN);
+  mix_slider = std::make_unique<ParameterSlider>(state, PARAM::MIX);
+  mode_slider = std::make_unique<ParameterSlider>(state, PARAM::MODE);
+
+  // since gain depends on mode, we do an additional register call here.
+  state->register_component(PARAM::MODE, gain_slider.get());
   addAndMakeVisible(*gain_slider);
+  addAndMakeVisible(*mix_slider);
+  addAndMakeVisible(*mode_slider);
 
   // some settings about UI
   setOpaque(true);
@@ -29,10 +37,12 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(PluginProcessor
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor() {
+  DBG("editor destructor");
   // remove any listeners here
 
   // also, if we have a lookAndFeel object we should call:
   // setLookAndFeel(nullptr);
+  state->unregister_component(PARAM::MODE, gain_slider.get());
 }
 
 //==============================================================================
@@ -43,11 +53,14 @@ void AudioPluginAudioProcessorEditor::paint(juce::Graphics &g) {
 }
 
 void AudioPluginAudioProcessorEditor::resized() {
+  DBG("editor resized");
   // set the position of your components here
   int slider_size = proportionOfWidth(0.1f);
   int slider_x = proportionOfWidth(0.5f) - (slider_size / 2);
   int slider_y = proportionOfHeight(0.5f) - (slider_size / 2);
   gain_slider->setBounds(slider_x, slider_y, slider_size, slider_size);
+  mix_slider->setBounds(slider_x + slider_size, slider_y, slider_size, slider_size);
+  mode_slider->setBounds(slider_x - slider_size, slider_y, slider_size, slider_size);
 }
 
 void AudioPluginAudioProcessorEditor::windowReadyToPaint() {

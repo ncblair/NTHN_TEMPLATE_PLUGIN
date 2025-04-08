@@ -51,7 +51,9 @@ bool PluginProcessorBase::isMidiEffect() const {
 #endif
 }
 
-double PluginProcessorBase::getTailLengthSeconds() const { return 10.0; }
+double PluginProcessorBase::getTailLengthSeconds() const { return 0.0; }
+
+void PluginProcessorBase::setNonRealtime(bool isNonRealtime) noexcept {}
 
 int PluginProcessorBase::getNumPrograms() {
   return 1; // NB: some hosts don't cope very well if you tell them there are 0 programs,

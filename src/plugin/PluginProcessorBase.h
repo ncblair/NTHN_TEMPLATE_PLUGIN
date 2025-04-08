@@ -24,6 +24,7 @@ public:
   bool producesMidi() const override;
   bool isMidiEffect() const override;
   double getTailLengthSeconds() const override;
+  void setNonRealtime(bool isNonRealtime) noexcept override;
   //==============================================================================
   int getNumPrograms() override;
   int getCurrentProgram() override;

@@ -18,7 +18,7 @@ void ParameterSlider::paint(juce::Graphics &g) {
   g.fillAll(findColour(ColourIds::backgroundColourId, true));
 
   // keep up to date with the parameter via polling
-  auto normed_val = get_current_knob_position();
+  auto normed_val = get_current_param_value_normalized();
   jassert(normed_val >= 0 && normed_val <= 1.0f);
 
   draw_rotary_slider(g, normed_val);
@@ -52,7 +52,8 @@ void ParameterSlider::mouseDown(const juce::MouseEvent &e) {
     // right click to reset
     state->reset_parameter(param_id);
   }
-  last_mouse_position = e.getPosition();
+  mouse_down_position = e.getPosition();
+  mouse_down_value = get_current_param_value_normalized();
 }
 
 void ParameterSlider::mouseDoubleClick(const juce::MouseEvent &e) {
@@ -60,18 +61,18 @@ void ParameterSlider::mouseDoubleClick(const juce::MouseEvent &e) {
   state->begin_change_gesture(param_id);
   state->reset_parameter(param_id);
   state->end_change_gesture(param_id);
-  last_mouse_position = e.getPosition();
+  mouse_down_position = e.getPosition();
+  mouse_down_value = get_current_param_value_normalized();
   juce::ignoreUnused(e);
 }
 
 void ParameterSlider::mouseDrag(const juce::MouseEvent &e) {
   // change parameter value
-  juce::Point<int> change = e.getPosition() - last_mouse_position;
-  last_mouse_position = e.getPosition();
+  juce::Point<int> change = e.getPosition() - mouse_down_position;
   const float speed = (e.mods.isShiftDown() ? 20.0f : 1.0f) * pixels_per_percent;
   const float slider_change = float(change.getX() - change.getY()) / speed;
-  const float next_knob_position = get_current_knob_position() + slider_change;
-  state->set_parameter_normalized(param_id, next_knob_position);
+  const float next_knob_value = mouse_down_value + slider_change;
+  state->set_parameter_normalized(param_id, next_knob_value);
 }
 
 void ParameterSlider::mouseUp(const juce::MouseEvent &e) {
@@ -103,6 +104,6 @@ void ParameterSlider::draw_rotary_slider(juce::Graphics &g, float slider_pos, fl
   g.fillPath(p, juce::AffineTransform::rotation(angle).translated(centreX, centreY));
 }
 
-float ParameterSlider::get_current_knob_position() {
+float ParameterSlider::get_current_param_value_normalized() {
   return PARAMETER_RANGES[param_id].convertTo0to1(state->param_value(param_id));
 }

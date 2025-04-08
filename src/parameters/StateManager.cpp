@@ -27,34 +27,17 @@ StateManager::StateManager(PluginProcessor *proc)
           PARAMETER_DEFAULTS[p_id],                                             // default value
           "", // parameter label (description?)
           juce::AudioProcessorParameter::Category::genericParameter,
-          [p_id](float value, int maximumStringLength) { // Float to String Precision 2 Digits
-            auto to_string_size = PARAMETER_TO_STRING_ARRS[p_id].size();
-            juce::String res;
-            if (to_string_size > 0 && (unsigned int)value < to_string_size) {
-              res = PARAMETER_TO_STRING_ARRS[p_id][(unsigned long)(value)];
-            } else {
-              std::stringstream ss;
-              ss << std::fixed << std::setprecision(2) << value;
-              res = juce::String(ss.str());
+          [this, p_id](float value, int maximumStringLength) {
+            std::array<float, TOTAL_NUMBER_PARAMETERS> dependencies_values;
+            const int num_dependencies = PARAMETER_DEPENDENCY_IDS[p_id].size();
+            for (int i = 0; i < num_dependencies; ++i) {
+              dependencies_values[i] =
+                  param_value(get_parameter_index(PARAMETER_DEPENDENCY_IDS[p_id][i].toString()));
             }
-            auto output = (res + " " + PARAMETER_SUFFIXES[p_id]);
-            return maximumStringLength > 0 ? output.substring(0, maximumStringLength) : output;
+            return PARAMETER_VALUE_TO_STRING_FUNCTIONS[p_id](
+                value, maximumStringLength, dependencies_values.data(), num_dependencies);
           },
-          [p_id](juce::String text) {
-            text = text.upToFirstOccurrenceOf(" " + PARAMETER_SUFFIXES[p_id], false, true);
-            auto to_string_size = PARAMETER_TO_STRING_ARRS[p_id].size();
-            if (to_string_size > 0) {
-              auto beg = PARAMETER_TO_STRING_ARRS[p_id].begin();
-              auto end = PARAMETER_TO_STRING_ARRS[p_id].end();
-              auto it = std::find(beg, end, text);
-              if (it == end) {
-                DBG("ERROR: Could not find text in PARAMETER_TO_STRING_ARRS");
-                return text.getFloatValue();
-              }
-              return float(it - beg);
-            }
-            return text.getFloatValue(); // Convert Back to Value
-          }));
+          PARAMETER_STRING_TO_VALUE_FUNCTIONS[p_id]));
     } else {
       property_tree.setProperty(PARAMETER_IDS[p_id], PARAMETER_DEFAULTS[p_id], nullptr);
       property_atomics[PARAMETER_NAMES[p_id]].store(PARAMETER_DEFAULTS[p_id]);
@@ -174,6 +157,13 @@ void StateManager::update_preset_modified() {
 
 bool StateManager::get_parameter_modified(size_t param_id, bool exchange_value) {
   return parameter_modified_flags[PARAMETER_NAMES[param_id]].exchange(exchange_value);
+}
+size_t StateManager::get_parameter_index(juce::String param_name) {
+  auto it = std::find(PARAMETER_NAMES.begin(), PARAMETER_NAMES.end(), param_name);
+  if (it != PARAMETER_NAMES.end()) {
+    return std::distance(PARAMETER_NAMES.begin(), it);
+  }
+  return PARAM::TOTAL_NUMBER_PARAMETERS;
 }
 
 void StateManager::undo() { undo_manager.undo(); }

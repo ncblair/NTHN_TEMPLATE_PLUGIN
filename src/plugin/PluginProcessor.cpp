@@ -4,27 +4,39 @@
 #include "../audio/Gain.h"
 #include "../parameters/StateManager.h"
 #include "PluginEditor.h"
+#include <chrono>
 
 //==============================================================================
-PluginProcessor::PluginProcessor() { state = std::make_unique<StateManager>(this); }
+PluginProcessor::PluginProcessor() {
+  DBG("processor constructor");
+  state = std::make_unique<StateManager>(this);
+}
 
 PluginProcessor::~PluginProcessor() {
+  DBG("processor destructor");
   // stop any threads, delete any raw pointers, remove any listeners, etc
 }
 
 //==============================================================================
 void PluginProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
+  DBG("prepareToPlay " << sampleRate << " " << samplesPerBlock);
   // Called after the constructor, but before playback starts
   // Use this to allocate up any resources you need, and to reset any
   // variables that depend on sample rate or block size
 
   gain = std::make_unique<Gain>(float(sampleRate), samplesPerBlock, getTotalNumOutputChannels(),
-                                PARAMETER_DEFAULTS[PARAM::GAIN] / 100.0f);
+                                PARAMETER_DEFAULTS[PARAM::GAIN],
+                                PARAMETER_DEFAULTS[PARAM::MIX] / 100.0f);
   should_snap_smoothed_params.store(true);
 }
 
 void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
                                    juce::MidiBuffer &midiMessages) {
+  auto current_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+                          std::chrono::steady_clock::now().time_since_epoch())
+                          .count();
+  DBG("processBlock: " << buffer.getNumSamples() << " samples, " << buffer.getNumChannels()
+                       << " channels, time: " << current_time << "ms");
   juce::ScopedNoDenormals noDenormals;
 
   // get audio buffer references outside of JUCE, so we can pass to non-juce processors
@@ -37,7 +49,8 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
   // in this case, gain goes from 0 to 100 (see: ../parameters/parameters.csv)
   // so we normalize it to 0 to 1
   //--------------------------------------------------------------------------------
-  auto requested_gain = state->param_value(PARAM::GAIN) / 100.0f;
+  auto requested_gain = state->param_value(PARAM::GAIN);
+  auto requested_mix = state->param_value(PARAM::MIX) / 100.0f;
 
   //--------
   // Tell all of our processors to force their parameters to update
@@ -47,7 +60,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
   //----
   if (should_snap_smoothed_params.exchange(false)) {
     // force state, to end any internal smoothing
-    gain->setState(state->param_value(PARAM::GAIN) / 100.0f);
+    gain->setState(state->param_value(PARAM::GAIN), state->param_value(PARAM::MIX) / 100.0f);
   }
 
   //--------------------------------------------------------------------------------
@@ -56,7 +69,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
   // samples for a synth, buffer is filled with zeros, and you should fill it with output samples
   // see: https://docs.juce.com/master/classAudioBuffer.html
   //--------------------------------------------------------------------------------
-  gain->process(bufferPtrs, numSamples, numChannels, requested_gain);
+  gain->process(bufferPtrs, numSamples, numChannels, requested_gain, requested_mix);
   //--------------------------------------------------------------------------------
   // you can use midiMessages to read midi if you need.
   // since we are not using midi yet, we clear the buffer.
@@ -65,6 +78,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float> &buffer,
 }
 
 void PluginProcessor::reset() {
+  DBG("reset");
   // called to clear any "tails" and make sure the plugin is ready to process.
 
   // cutoff smooth here – smoothed params are kinda like tails
@@ -73,6 +87,7 @@ void PluginProcessor::reset() {
 
 //==============================================================================
 void PluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
+  DBG("getStateInformation");
   // You should use this method to store your parameters in the memory block.
   // You could do that either as raw data, or use the XML or ValueTree classes
   // as intermediaries to make it easy to save and load complex data.
@@ -84,6 +99,7 @@ void PluginProcessor::getStateInformation(juce::MemoryBlock &destData) {
 }
 
 void PluginProcessor::setStateInformation(const void *data, int sizeInBytes) {
+  DBG("setStateInformation");
   // You should use this method to restore your parameters from this memory block,
   // whose contents will have been created by the getStateInformation() call.
 
@@ -96,6 +112,7 @@ void PluginProcessor::setStateInformation(const void *data, int sizeInBytes) {
 }
 
 juce::AudioProcessorEditor *PluginProcessor::createEditor() {
+  DBG("processor createEditor");
   return new AudioPluginAudioProcessorEditor(*this);
 }
 

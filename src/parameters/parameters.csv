@@ -1,2 +1,4 @@
-PARAMETER, MIN, MAX, GRAIN, EXP, DEFAULT, AUTOMATABLE, NAME, SUFFIX, TOOLTIP, TO_STRING_ARR
-GAIN, 0, 100, 0, 1, 50, 1, Gain, %, Loudness Parameter, 
+PARAMETER, MIN, MAX, GRAIN, EXP, DEFAULT, AUTOMATABLE, NAME, SUFFIX, TOOLTIP, TO_STRING_ARR, DEPENDENCIES
+GAIN, 0, 1, 0, 1, 0.5, 1, Gain, , Loudness Parameter, , "MODE"
+MODE, 0, 1, 1, 1, 0, 1, Mode, , Mode, "Decibels" "Amplitude", 
+MIX, 0, 100, 0, 1, 100, 1, Mix, %, Mix, ,

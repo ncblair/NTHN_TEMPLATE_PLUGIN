@@ -46,6 +46,8 @@ private:
 
   // A single slider
   std::unique_ptr<ParameterSlider> gain_slider;
+  std::unique_ptr<ParameterSlider> mix_slider;
+  std::unique_ptr<ParameterSlider> mode_slider;
 
   // VBlank Attachment for handling state before repainting
   std::unique_ptr<juce::VBlankAttachment> repaint_callback_handler;

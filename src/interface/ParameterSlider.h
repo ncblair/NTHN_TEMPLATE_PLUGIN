@@ -26,8 +26,9 @@ protected:
 private:
   void draw_rotary_slider(juce::Graphics &g, float normed_value, float x = 0.25f, float y = 0.25f,
                           float w = 0.5f, float h = 0.5f);
-  float get_current_knob_position(); // 0 to 1
+  float get_current_param_value_normalized(); // 0 to 1
 
   float pixels_per_percent{100.0f};
-  juce::Point<int> last_mouse_position;
+  juce::Point<int> mouse_down_position;
+  float mouse_down_value{0.0f};
 };
