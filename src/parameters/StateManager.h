@@ -151,6 +151,10 @@ public:
   std::atomic<bool> preset_modified{true};
 
 private:
+  void thread_safe_set_value_tree_property(juce::ValueTree tree,
+                                           const juce::Identifier &name,
+                                           const juce::var &new_value,
+                                           juce::UndoManager *undo_manager_);
   // state
   juce::ValueTree state_tree;
   std::unique_ptr<juce::AudioProcessorValueTreeState> param_tree_ptr;

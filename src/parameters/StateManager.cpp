@@ -120,10 +120,11 @@ juce::ValueTree StateManager::get_state() {
 // called from message thread
 void StateManager::save_preset(juce::String preset_name) {
   {
-    std::shared_lock<std::shared_mutex> lock(state_mutex);
     // not undo-able
-    preset_tree.setProperty(PRESET_NAME_ID, preset_name, nullptr);
-    preset_tree.setProperty(PRESET_MODIFIED_ID, false, nullptr);
+    thread_safe_set_value_tree_property(preset_tree, PRESET_NAME_ID,
+                                        preset_name, nullptr);
+    thread_safe_set_value_tree_property(preset_tree, PRESET_MODIFIED_ID, false,
+                                        nullptr);
   }
   auto file =
       PRESETS_DIR.getChildFile(preset_name).withFileExtension(PRESET_EXTENSION);
@@ -173,8 +174,8 @@ void StateManager::load_from(juce::XmlElement *xml) {
 
 // called from message thread
 void StateManager::set_preset_name(juce::String preset_name) {
-  std::shared_lock<std::shared_mutex> lock(state_mutex);
-  preset_tree.setProperty(PRESET_NAME_ID, preset_name, &undo_manager);
+  thread_safe_set_value_tree_property(preset_tree, PRESET_NAME_ID, preset_name,
+                                      &undo_manager);
 }
 
 // called from message thread
@@ -192,8 +193,8 @@ void StateManager::update_preset_modified() {
   // called from UI thread - updates preset_modified property, if the preset has
   // been modified
   if (preset_modified.exchange(false)) {
-    std::shared_lock<std::shared_mutex> lock(state_mutex);
-    preset_tree.setProperty(PRESET_MODIFIED_ID, true, nullptr);
+    thread_safe_set_value_tree_property(preset_tree, PRESET_MODIFIED_ID, true,
+                                        nullptr);
   }
 }
 
@@ -240,8 +241,8 @@ void StateManager::set_parameter(size_t param_id, float value) {
     auto normalized_value = range.convertTo0to1(range.snapToLegalValue(value));
     set_parameter_normalized(param_id, normalized_value);
   } else {
-    std::shared_lock<std::shared_mutex> lock(state_mutex);
-    property_tree.setProperty(PARAMETER_IDS[param_id], value, &undo_manager);
+    thread_safe_set_value_tree_property(property_tree, PARAMETER_IDS[param_id],
+                                        value, &undo_manager);
   }
 }
 
@@ -285,10 +286,8 @@ void StateManager::init() {
 
   // reset value trees
   set_preset_name(DEFAULT_PRESET);
-  {
-    std::shared_lock<std::shared_mutex> lock(state_mutex);
-    preset_tree.setProperty(PRESET_MODIFIED_ID, false, &undo_manager);
-  }
+  thread_safe_set_value_tree_property(preset_tree, PRESET_MODIFIED_ID, false,
+                                      &undo_manager);
   preset_modified.store(false);
 }
 
@@ -352,4 +351,11 @@ void StateManager::unregister_component(size_t param_id,
                                         juce::Component *component) {
   assert(param_id <= TOTAL_NUMBER_PARAMETERS);
   param_to_callback[param_id].erase(component);
+}
+
+void StateManager::thread_safe_set_value_tree_property(
+    juce::ValueTree tree, const juce::Identifier &name,
+    const juce::var &new_value, juce::UndoManager *undo_manager_) {
+  std::shared_lock<std::shared_mutex> lock(state_mutex);
+  tree.setProperty(name, new_value, undo_manager_);
 }
