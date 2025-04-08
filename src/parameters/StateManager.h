@@ -4,6 +4,8 @@
 
 class PluginProcessor;
 
+#include <mutex>
+
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_core/juce_core.h>
 
@@ -72,12 +74,9 @@ public:
   // – say a preset browser or use get_state() if you want the whole state of
   // the plugin – say for saving to disk
   //--------------------------------------------------------------------------------
-  juce::AudioProcessorValueTreeState *get_param_tree();
-  juce::ValueTree get_property_tree();
-  juce::ValueTree get_preset_tree();
   juce::ValueTree get_state();
 
-  //--------------------------------------------------------------------------------
+  //----------------------------------------x----------------------------------------
   // Saving and Loading Presets, called from UI thread
   // preset_modified is true when any parameter has been changed, after loading
   // a preset
@@ -168,6 +167,8 @@ private:
 
   // Undo Manager
   juce::UndoManager undo_manager;
+
+  std::mutex state_mutex; // protect all the value trees.
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StateManager)
 };
