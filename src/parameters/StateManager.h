@@ -4,6 +4,8 @@
 
 class PluginProcessor;
 
+#include <shared_mutex>
+
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_core/juce_core.h>
 
@@ -72,12 +74,9 @@ public:
   // – say a preset browser or use get_state() if you want the whole state of
   // the plugin – say for saving to disk
   //--------------------------------------------------------------------------------
-  juce::AudioProcessorValueTreeState *get_param_tree();
-  juce::ValueTree get_property_tree();
-  juce::ValueTree get_preset_tree();
   juce::ValueTree get_state();
 
-  //--------------------------------------------------------------------------------
+  //----------------------------------------x----------------------------------------
   // Saving and Loading Presets, called from UI thread
   // preset_modified is true when any parameter has been changed, after loading
   // a preset
@@ -102,8 +101,7 @@ public:
   //--------------------------------------------------------------------------------
   void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                 const juce::Identifier &property) override;
-  void parameterChanged(const juce::String &parameterID,
-                        float newValue) override;
+  void parameterChanged(const juce::String &parameterID, float newValue) override;
 
   //--------------------------------------------------------------------------------
   // each component registers itself with the state manager
@@ -115,8 +113,7 @@ public:
   void register_component(size_t param_id, juce::Component *component,
                           std::function<void()> custom_callback = {});
   void unregister_component(size_t param_id, juce::Component *component);
-  std::unordered_map<juce::Component *, std::function<void()>> &
-  get_callbacks(size_t param_id) {
+  std::unordered_map<juce::Component *, std::function<void()>> &get_callbacks(size_t param_id) {
     return param_to_callback[param_id];
   }
 
@@ -152,6 +149,9 @@ public:
   std::atomic<bool> preset_modified{true};
 
 private:
+  void thread_safe_set_value_tree_property(juce::ValueTree tree, const juce::Identifier &name,
+                                           const juce::var &new_value,
+                                           juce::UndoManager *undo_manager_);
   // state
   juce::ValueTree state_tree;
   std::unique_ptr<juce::AudioProcessorValueTreeState> param_tree_ptr;
@@ -168,6 +168,8 @@ private:
 
   // Undo Manager
   juce::UndoManager undo_manager;
+
+  std::shared_mutex state_mutex; // protect all the value trees.
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StateManager)
 };
