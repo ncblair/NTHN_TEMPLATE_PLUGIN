@@ -101,8 +101,7 @@ public:
   //--------------------------------------------------------------------------------
   void valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
                                 const juce::Identifier &property) override;
-  void parameterChanged(const juce::String &parameterID,
-                        float newValue) override;
+  void parameterChanged(const juce::String &parameterID, float newValue) override;
 
   //--------------------------------------------------------------------------------
   // each component registers itself with the state manager
@@ -114,8 +113,7 @@ public:
   void register_component(size_t param_id, juce::Component *component,
                           std::function<void()> custom_callback = {});
   void unregister_component(size_t param_id, juce::Component *component);
-  std::unordered_map<juce::Component *, std::function<void()>> &
-  get_callbacks(size_t param_id) {
+  std::unordered_map<juce::Component *, std::function<void()>> &get_callbacks(size_t param_id) {
     return param_to_callback[param_id];
   }
 
@@ -151,8 +149,7 @@ public:
   std::atomic<bool> preset_modified{true};
 
 private:
-  void thread_safe_set_value_tree_property(juce::ValueTree tree,
-                                           const juce::Identifier &name,
+  void thread_safe_set_value_tree_property(juce::ValueTree tree, const juce::Identifier &name,
                                            const juce::var &new_value,
                                            juce::UndoManager *undo_manager_);
   // state
