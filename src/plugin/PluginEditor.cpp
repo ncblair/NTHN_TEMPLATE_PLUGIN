@@ -7,6 +7,7 @@
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(PluginProcessor &p)
     : AudioProcessorEditor(&p), processorRef(p) {
+  DBG("editor constructor");
   state = processorRef.state.get();
 
   // add slider BEFORE setting size
@@ -36,6 +37,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(PluginProcessor
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor() {
+  DBG("editor destructor");
   // remove any listeners here
 
   // also, if we have a lookAndFeel object we should call:
@@ -51,6 +53,7 @@ void AudioPluginAudioProcessorEditor::paint(juce::Graphics &g) {
 }
 
 void AudioPluginAudioProcessorEditor::resized() {
+  DBG("editor resized");
   // set the position of your components here
   int slider_size = proportionOfWidth(0.1f);
   int slider_x = proportionOfWidth(0.5f) - (slider_size / 2);

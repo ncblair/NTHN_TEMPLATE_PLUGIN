@@ -35,7 +35,7 @@ static const std::array<juce::NormalisableRange<float>, PARAM::TOTAL_NUMBER_PARA
 static const std::array<float, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_DEFAULTS {
 	0.5f,
 	0.0f,
-	50.0f,
+	100.0f,
 };
 
 static const std::array<bool, PARAM::TOTAL_NUMBER_PARAMETERS> PARAMETER_AUTOMATABLE {
