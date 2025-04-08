@@ -88,7 +88,6 @@ StateManager::StateManager(PluginProcessor *proc)
 }
 
 StateManager::~StateManager() {
-  std::unique_lock<std::shared_mutex> lock(state_mutex);
   property_tree.removeListener(this);
   for (size_t p_id = 0; p_id < PARAM::TOTAL_NUMBER_PARAMETERS; ++p_id) {
     if (PARAMETER_AUTOMATABLE[p_id]) {
