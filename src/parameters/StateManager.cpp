@@ -7,7 +7,8 @@
 
 StateManager::StateManager(PluginProcessor *proc)
     : PRESETS_DIR(
-          juce::File::getSpecialLocation(juce::File::SpecialLocationType::userMusicDirectory)
+          juce::File::getSpecialLocation(
+              juce::File::SpecialLocationType::userMusicDirectory)
               .getChildFile(juce::String(JucePlugin_Manufacturer) + "_plugins")
               .getChildFile(JucePlugin_Name)
               .getChildFile("presets")),
@@ -21,13 +22,16 @@ StateManager::StateManager(PluginProcessor *proc)
   for (size_t p_id = 0; p_id < PARAM::TOTAL_NUMBER_PARAMETERS; ++p_id) {
     if (PARAMETER_AUTOMATABLE[p_id]) {
       params.push_back(std::make_unique<juce::AudioParameterFloat>(
-          juce::ParameterID{PARAMETER_NAMES[p_id], ProjectInfo::versionNumber}, // parameter ID
-          PARAMETER_NICKNAMES[p_id],                                            // parameter name
-          PARAMETER_RANGES[p_id],                                               // range
-          PARAMETER_DEFAULTS[p_id],                                             // default value
+          juce::ParameterID{PARAMETER_NAMES[p_id],
+                            ProjectInfo::versionNumber}, // parameter ID
+          PARAMETER_NICKNAMES[p_id],                     // parameter name
+          PARAMETER_RANGES[p_id],                        // range
+          PARAMETER_DEFAULTS[p_id],                      // default value
           "", // parameter label (description?)
           juce::AudioProcessorParameter::Category::genericParameter,
-          [p_id](float value, int maximumStringLength) { // Float to String Precision 2 Digits
+          [p_id](
+              float value,
+              int maximumStringLength) { // Float to String Precision 2 Digits
             auto to_string_size = PARAMETER_TO_STRING_ARRS[p_id].size();
             juce::String res;
             if (to_string_size > 0 && (unsigned int)value < to_string_size) {
@@ -38,10 +42,13 @@ StateManager::StateManager(PluginProcessor *proc)
               res = juce::String(ss.str());
             }
             auto output = (res + " " + PARAMETER_SUFFIXES[p_id]);
-            return maximumStringLength > 0 ? output.substring(0, maximumStringLength) : output;
+            return maximumStringLength > 0
+                       ? output.substring(0, maximumStringLength)
+                       : output;
           },
           [p_id](juce::String text) {
-            text = text.upToFirstOccurrenceOf(" " + PARAMETER_SUFFIXES[p_id], false, true);
+            text = text.upToFirstOccurrenceOf(" " + PARAMETER_SUFFIXES[p_id],
+                                              false, true);
             auto to_string_size = PARAMETER_TO_STRING_ARRS[p_id].size();
             if (to_string_size > 0) {
               auto beg = PARAMETER_TO_STRING_ARRS[p_id].begin();
@@ -56,14 +63,15 @@ StateManager::StateManager(PluginProcessor *proc)
             return text.getFloatValue(); // Convert Back to Value
           }));
     } else {
-      property_tree.setProperty(PARAMETER_IDS[p_id], PARAMETER_DEFAULTS[p_id], nullptr);
+      property_tree.setProperty(PARAMETER_IDS[p_id], PARAMETER_DEFAULTS[p_id],
+                                nullptr);
       property_atomics[PARAMETER_NAMES[p_id]].store(PARAMETER_DEFAULTS[p_id]);
     }
     parameter_modified_flags[PARAMETER_NAMES[p_id]].store(false);
   }
 
-  param_tree_ptr.reset(new juce::AudioProcessorValueTreeState(*proc, &undo_manager, PARAMETERS_ID,
-                                                              {params.begin(), params.end()}));
+  param_tree_ptr.reset(new juce::AudioProcessorValueTreeState(
+      *proc, &undo_manager, PARAMETERS_ID, {params.begin(), params.end()}));
   property_tree.addListener(this);
 
   for (size_t p_id = 0; p_id < PARAM::TOTAL_NUMBER_PARAMETERS; ++p_id) {
@@ -91,13 +99,16 @@ StateManager::~StateManager() {
 float StateManager::param_value(size_t param_id) {
   // returns the parameter value of a certain ID in a thread safe way
   if (PARAMETER_AUTOMATABLE[param_id]) {
-    return param_tree_ptr->getRawParameterValue(PARAMETER_NAMES[param_id])->load();
+    return param_tree_ptr->getRawParameterValue(PARAMETER_NAMES[param_id])
+        ->load();
   } else {
     return property_atomics[PARAMETER_NAMES[param_id]].load();
   }
 }
 
-juce::AudioProcessorValueTreeState *StateManager::get_param_tree() { return param_tree_ptr.get(); }
+juce::AudioProcessorValueTreeState *StateManager::get_param_tree() {
+  return param_tree_ptr.get();
+}
 
 juce::ValueTree StateManager::get_property_tree() { return property_tree; }
 
@@ -115,7 +126,8 @@ void StateManager::save_preset(juce::String preset_name) {
   // not undo-able
   preset_tree.setProperty(PRESET_NAME_ID, preset_name, nullptr);
   preset_tree.setProperty(PRESET_MODIFIED_ID, false, nullptr);
-  auto file = PRESETS_DIR.getChildFile(preset_name).withFileExtension(PRESET_EXTENSION);
+  auto file =
+      PRESETS_DIR.getChildFile(preset_name).withFileExtension(PRESET_EXTENSION);
   if (!PRESETS_DIR.exists()) {
     // create directory if it doesn't exist
     PRESETS_DIR.createDirectory();
@@ -133,7 +145,8 @@ void StateManager::save_preset(juce::String preset_name) {
 }
 
 void StateManager::load_preset(juce::String preset_name) {
-  auto file = PRESETS_DIR.getChildFile(preset_name).withFileExtension(PRESET_EXTENSION);
+  auto file =
+      PRESETS_DIR.getChildFile(preset_name).withFileExtension(PRESET_EXTENSION);
   if (file.existsAsFile()) {
     std::unique_ptr<juce::XmlElement> xmlState = juce::XmlDocument::parse(file);
     load_from(xmlState.get());
@@ -141,15 +154,17 @@ void StateManager::load_preset(juce::String preset_name) {
 }
 
 void StateManager::load_from(juce::XmlElement *xml) {
-    if (xml != nullptr) {
-        if (xml->hasTagName(STATE_ID)) {
-            auto new_tree = juce::ValueTree::fromXml(*xml);
-            param_tree_ptr->replaceState(new_tree.getChildWithName(PARAMETERS_ID));
-            property_tree.copyPropertiesFrom(new_tree.getChildWithName(PROPERTIES_ID), &undo_manager);
-            preset_tree.copyPropertiesFrom(new_tree.getChildWithName(PRESET_ID), &undo_manager);
-            preset_modified.store(false);
-        }
+  if (xml != nullptr) {
+    if (xml->hasTagName(STATE_ID)) {
+      auto new_tree = juce::ValueTree::fromXml(*xml);
+      param_tree_ptr->replaceState(new_tree.getChildWithName(PARAMETERS_ID));
+      property_tree.copyPropertiesFrom(new_tree.getChildWithName(PROPERTIES_ID),
+                                       &undo_manager);
+      preset_tree.copyPropertiesFrom(new_tree.getChildWithName(PRESET_ID),
+                                     &undo_manager);
+      preset_modified.store(false);
     }
+  }
 }
 
 void StateManager::set_preset_name(juce::String preset_name) {
@@ -165,14 +180,17 @@ juce::String StateManager::get_preset_name() {
 }
 
 void StateManager::update_preset_modified() {
-  // called from UI thread - updates preset_modified property, if the preset has been modified
+  // called from UI thread - updates preset_modified property, if the preset has
+  // been modified
   if (preset_modified.exchange(false)) {
     preset_tree.setProperty(PRESET_MODIFIED_ID, true, nullptr);
   }
 }
 
-bool StateManager::get_parameter_modified(size_t param_id, bool exchange_value) {
-  return parameter_modified_flags[PARAMETER_NAMES[param_id]].exchange(exchange_value);
+bool StateManager::get_parameter_modified(size_t param_id,
+                                          bool exchange_value) {
+  return parameter_modified_flags[PARAMETER_NAMES[param_id]].exchange(
+      exchange_value);
 }
 
 void StateManager::undo() { undo_manager.undo(); }
@@ -209,7 +227,8 @@ void StateManager::set_parameter(size_t param_id, float value) {
   }
 }
 
-void StateManager::set_parameter_normalized(size_t param_id, float normalized_value) {
+void StateManager::set_parameter_normalized(size_t param_id,
+                                            float normalized_value) {
   if (normalized_value > 1.0)
     normalized_value = 1.0;
   else if (normalized_value < 0.0)
@@ -218,7 +237,8 @@ void StateManager::set_parameter_normalized(size_t param_id, float normalized_va
     auto parameter = get_parameter(param_id);
     parameter->setValueNotifyingHost(normalized_value);
   } else {
-    auto unnormalized_value = PARAMETER_RANGES[param_id].convertFrom0to1(normalized_value);
+    auto unnormalized_value =
+        PARAMETER_RANGES[param_id].convertFrom0to1(normalized_value);
     set_parameter(param_id, unnormalized_value);
   }
 }
@@ -233,7 +253,8 @@ void StateManager::randomize_parameter(size_t param_id, float min, float max) {
   } else {
     auto range = PARAMETER_RANGES[param_id];
     auto scaled_val = range.convertFrom0to1(value);
-    property_tree.setProperty(PARAMETER_IDS[param_id], scaled_val, &undo_manager);
+    property_tree.setProperty(PARAMETER_IDS[param_id], scaled_val,
+                              &undo_manager);
   }
 }
 
@@ -263,20 +284,23 @@ void StateManager::randomize_parameters() {
 
 juce::UndoManager *StateManager::get_undo_manager() { return &undo_manager; }
 
-void StateManager::valueTreePropertyChanged(juce::ValueTree &treeWhosePropertyHasChanged,
-                                            const juce::Identifier &property) {
+void StateManager::valueTreePropertyChanged(
+    juce::ValueTree &treeWhosePropertyHasChanged,
+    const juce::Identifier &property) {
   // this will be polled by UI to update when UI changes
   if (treeWhosePropertyHasChanged != preset_tree) {
     preset_modified.store(true);
     any_parameter_changed.store(true);
     if (treeWhosePropertyHasChanged == property_tree) {
-      property_atomics[property.toString()].store(float(property_tree.getProperty(property)));
+      property_atomics[property.toString()].store(
+          float(property_tree.getProperty(property)));
       parameter_modified_flags[property.toString()].store(true);
     }
   }
 }
 
-void StateManager::parameterChanged(const juce::String &parameterID, float newValue) {
+void StateManager::parameterChanged(const juce::String &parameterID,
+                                    float newValue) {
   // parameter changed, note as modified
   // might be called from audio thread, so must be thread safe
   preset_modified.store(true);
@@ -285,20 +309,26 @@ void StateManager::parameterChanged(const juce::String &parameterID, float newVa
   juce::ignoreUnused(newValue);
 }
 
-void StateManager::register_component(size_t param_id, juce::Component *component,
+void StateManager::register_component(size_t param_id,
+                                      juce::Component *component,
                                       std::function<void()> custom_callback)
-// custom_callback is called when the parameter changes. default is to just repaint the component
-// call this only one time per per component parameter pair
+// custom_callback is called when the parameter changes. default is to just
+// repaint the component call this only one time per per component parameter
+// pair
 {
   assert(param_id <= TOTAL_NUMBER_PARAMETERS);
-  assert(param_to_callback[param_id].find(component) == param_to_callback[param_id].end());
+  assert(param_to_callback[param_id].find(component) ==
+         param_to_callback[param_id].end());
   if (custom_callback)
     param_to_callback[param_id][component] = custom_callback;
   else
-    param_to_callback[param_id][component] = [component]() { component->repaint(); };
+    param_to_callback[param_id][component] = [component]() {
+      component->repaint();
+    };
 }
 
-void StateManager::unregister_component(size_t param_id, juce::Component *component) {
+void StateManager::unregister_component(size_t param_id,
+                                        juce::Component *component) {
   assert(param_id <= TOTAL_NUMBER_PARAMETERS);
   param_to_callback[param_id].erase(component);
 }
