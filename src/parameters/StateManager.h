@@ -4,7 +4,7 @@
 
 class PluginProcessor;
 
-#include <mutex>
+#include <shared_mutex>
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_core/juce_core.h>
@@ -168,7 +168,7 @@ private:
   // Undo Manager
   juce::UndoManager undo_manager;
 
-  std::mutex state_mutex; // protect all the value trees.
+  std::shared_mutex state_mutex; // protect all the value trees.
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StateManager)
 };

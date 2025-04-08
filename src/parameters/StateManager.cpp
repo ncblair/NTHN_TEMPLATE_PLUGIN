@@ -88,6 +88,7 @@ StateManager::StateManager(PluginProcessor *proc)
 }
 
 StateManager::~StateManager() {
+  std::unique_lock<std::shared_mutex> lock(state_mutex);
   property_tree.removeListener(this);
   for (size_t p_id = 0; p_id < PARAM::TOTAL_NUMBER_PARAMETERS; ++p_id) {
     if (PARAMETER_AUTOMATABLE[p_id]) {
@@ -96,6 +97,7 @@ StateManager::~StateManager() {
   }
 }
 
+// called from any thread
 float StateManager::param_value(size_t param_id) {
   // returns the parameter value of a certain ID in a thread safe way
   if (PARAMETER_AUTOMATABLE[param_id]) {
@@ -106,15 +108,9 @@ float StateManager::param_value(size_t param_id) {
   }
 }
 
-juce::AudioProcessorValueTreeState *StateManager::get_param_tree() {
-  return param_tree_ptr.get();
-}
-
-juce::ValueTree StateManager::get_property_tree() { return property_tree; }
-
-juce::ValueTree StateManager::get_preset_tree() { return preset_tree; }
-
+// called from non-realtime thread
 juce::ValueTree StateManager::get_state() {
+  std::unique_lock<std::shared_mutex> lock(state_mutex);
   state_tree = juce::ValueTree(STATE_ID);
   state_tree.appendChild(param_tree_ptr->copyState(), nullptr);
   state_tree.appendChild(property_tree.createCopy(), nullptr);
@@ -122,10 +118,14 @@ juce::ValueTree StateManager::get_state() {
   return state_tree;
 }
 
+// called from message thread
 void StateManager::save_preset(juce::String preset_name) {
-  // not undo-able
-  preset_tree.setProperty(PRESET_NAME_ID, preset_name, nullptr);
-  preset_tree.setProperty(PRESET_MODIFIED_ID, false, nullptr);
+  {
+    std::shared_lock<std::shared_mutex> lock(state_mutex);
+    // not undo-able
+    preset_tree.setProperty(PRESET_NAME_ID, preset_name, nullptr);
+    preset_tree.setProperty(PRESET_MODIFIED_ID, false, nullptr);
+  }
   auto file =
       PRESETS_DIR.getChildFile(preset_name).withFileExtension(PRESET_EXTENSION);
   if (!PRESETS_DIR.exists()) {
@@ -136,6 +136,7 @@ void StateManager::save_preset(juce::String preset_name) {
     // create file
     file.create();
   }
+
   auto plugin_state = get_state();
 
   std::unique_ptr<juce::XmlElement> xml(plugin_state.createXml());
@@ -144,6 +145,7 @@ void StateManager::save_preset(juce::String preset_name) {
   temp.replaceFileIn(file);
 }
 
+// called from message thread (technically any non-realtime thread)
 void StateManager::load_preset(juce::String preset_name) {
   auto file =
       PRESETS_DIR.getChildFile(preset_name).withFileExtension(PRESET_EXTENSION);
@@ -153,11 +155,14 @@ void StateManager::load_preset(juce::String preset_name) {
   }
 }
 
+// called from non-realtime thread
 void StateManager::load_from(juce::XmlElement *xml) {
+
   if (xml != nullptr) {
     if (xml->hasTagName(STATE_ID)) {
       auto new_tree = juce::ValueTree::fromXml(*xml);
       param_tree_ptr->replaceState(new_tree.getChildWithName(PARAMETERS_ID));
+      std::unique_lock<std::shared_mutex> lock(state_mutex);
       property_tree.copyPropertiesFrom(new_tree.getChildWithName(PROPERTIES_ID),
                                        &undo_manager);
       preset_tree.copyPropertiesFrom(new_tree.getChildWithName(PRESET_ID),
@@ -167,11 +172,15 @@ void StateManager::load_from(juce::XmlElement *xml) {
   }
 }
 
+// called from message thread
 void StateManager::set_preset_name(juce::String preset_name) {
+  std::shared_lock<std::shared_mutex> lock(state_mutex);
   preset_tree.setProperty(PRESET_NAME_ID, preset_name, &undo_manager);
 }
 
+// called from message thread
 juce::String StateManager::get_preset_name() {
+  std::shared_lock<std::shared_mutex> lock(state_mutex);
   if (bool(preset_tree.getProperty(PRESET_MODIFIED_ID))) {
     return preset_tree.getProperty(PRESET_NAME_ID).toString() + "*";
   } else {
@@ -179,29 +188,36 @@ juce::String StateManager::get_preset_name() {
   }
 }
 
+// called from message thread
 void StateManager::update_preset_modified() {
   // called from UI thread - updates preset_modified property, if the preset has
   // been modified
   if (preset_modified.exchange(false)) {
+    std::shared_lock<std::shared_mutex> lock(state_mutex);
     preset_tree.setProperty(PRESET_MODIFIED_ID, true, nullptr);
   }
 }
 
+// called from any thread
 bool StateManager::get_parameter_modified(size_t param_id,
                                           bool exchange_value) {
   return parameter_modified_flags[PARAMETER_NAMES[param_id]].exchange(
       exchange_value);
 }
 
+// called from message thread
 void StateManager::undo() { undo_manager.undo(); }
 
+// called from message thread
 void StateManager::redo() { undo_manager.redo(); }
 
+// called from the message thread
 juce::RangedAudioParameter *StateManager::get_parameter(size_t param_id) {
   assert(PARAMETER_AUTOMATABLE[param_id]);
   return param_tree_ptr->getParameter(PARAMETER_NAMES[param_id]);
 }
 
+// called from the message thread
 void StateManager::begin_change_gesture(size_t param_id) {
   undo_manager.beginNewTransaction();
   if (PARAMETER_AUTOMATABLE[param_id]) {
@@ -210,6 +226,7 @@ void StateManager::begin_change_gesture(size_t param_id) {
   }
 }
 
+// called from the message thread
 void StateManager::end_change_gesture(size_t param_id) {
   if (PARAMETER_AUTOMATABLE[param_id]) {
     auto parameter = get_parameter(param_id);
@@ -217,22 +234,22 @@ void StateManager::end_change_gesture(size_t param_id) {
   }
 }
 
+// called from the message thread
 void StateManager::set_parameter(size_t param_id, float value) {
   if (PARAMETER_AUTOMATABLE[param_id]) {
     auto range = PARAMETER_RANGES[param_id];
     auto normalized_value = range.convertTo0to1(range.snapToLegalValue(value));
     set_parameter_normalized(param_id, normalized_value);
   } else {
+    std::shared_lock<std::shared_mutex> lock(state_mutex);
     property_tree.setProperty(PARAMETER_IDS[param_id], value, &undo_manager);
   }
 }
 
+// called from the message thread
 void StateManager::set_parameter_normalized(size_t param_id,
                                             float normalized_value) {
-  if (normalized_value > 1.0)
-    normalized_value = 1.0;
-  else if (normalized_value < 0.0)
-    normalized_value = 0.0;
+  normalized_value = std::clamp(normalized_value, 0.0f, 1.0f);
   if (PARAMETER_AUTOMATABLE[param_id]) {
     auto parameter = get_parameter(param_id);
     parameter->setValueNotifyingHost(normalized_value);
@@ -242,41 +259,42 @@ void StateManager::set_parameter_normalized(size_t param_id,
     set_parameter(param_id, unnormalized_value);
   }
 }
-
+// called from the message thread
 void StateManager::randomize_parameter(size_t param_id, float min, float max) {
   // min, max between 0 and 1
   jassert(min >= 0.0f && max <= 1.0f && max >= min);
   auto value = rng.nextFloat() * (max - min) + min;
-  if (PARAMETER_AUTOMATABLE[param_id]) {
-    auto parameter = get_parameter(param_id);
-    parameter->setValueNotifyingHost(value);
-  } else {
-    auto range = PARAMETER_RANGES[param_id];
-    auto scaled_val = range.convertFrom0to1(value);
-    property_tree.setProperty(PARAMETER_IDS[param_id], scaled_val,
-                              &undo_manager);
-  }
+  set_parameter_normalized(param_id, value);
 }
 
+// called from the message thread
 juce::String StateManager::get_parameter_text(size_t param_id) {
   return get_parameter(param_id)->getText(
       PARAMETER_RANGES[param_id].convertTo0to1(param_value(param_id)), 20);
 }
+
+// called from the message thread
 void StateManager::reset_parameter(size_t param_id) {
   set_parameter(param_id, PARAMETER_DEFAULTS[param_id]);
 }
 
+// called from the message thread
 void StateManager::init() {
   for (size_t i = 0; i < PARAM::TOTAL_NUMBER_PARAMETERS; ++i) {
     reset_parameter(i);
   }
+
   // reset value trees
   set_preset_name(DEFAULT_PRESET);
-  preset_tree.setProperty(PRESET_MODIFIED_ID, false, &undo_manager);
+  {
+    std::shared_lock<std::shared_mutex> lock(state_mutex);
+    preset_tree.setProperty(PRESET_MODIFIED_ID, false, &undo_manager);
+  }
   preset_modified.store(false);
 }
 
 void StateManager::randomize_parameters() {
+
   for (size_t i = 0; i < PARAM::TOTAL_NUMBER_PARAMETERS; ++i) {
     randomize_parameter(i);
   }
@@ -292,8 +310,12 @@ void StateManager::valueTreePropertyChanged(
     preset_modified.store(true);
     any_parameter_changed.store(true);
     if (treeWhosePropertyHasChanged == property_tree) {
-      property_atomics[property.toString()].store(
-          float(property_tree.getProperty(property)));
+      float changed_property_value;
+      {
+        std::shared_lock<std::shared_mutex> lock(state_mutex);
+        changed_property_value = float(property_tree.getProperty(property));
+      }
+      property_atomics[property.toString()].store(changed_property_value);
       parameter_modified_flags[property.toString()].store(true);
     }
   }
